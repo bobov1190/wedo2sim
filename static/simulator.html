@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WeDo 2.0 — Конструктор</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060A10;--s1:#0C1420;--s2:#111A28;--b:#1A2A3A;--b2:#203040;
+  --t:#D8E4F0;--m:#5A7090;--a:#00C8FF;--g:#00E580;--r:#FF4455;--p:#9B6DFF;--y:#FFB800}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--t);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{height:54px;background:var(--s1);border-bottom:1px solid var(--b);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:10}
+.back-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--b);background:none;color:var(--m);font-family:'Nunito',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:.15s}
+.back-btn:hover{border-color:var(--a);color:var(--a)}
+.proj-name{font-weight:900;font-size:15px;color:var(--t);background:none;border:none;border-bottom:1px solid transparent;outline:none;font-family:'Nunito',sans-serif;min-width:100px;transition:.15s}
+.proj-name:focus{border-bottom-color:var(--a)}
+.hfill{flex:1}
+.status-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;border:1px solid var(--b);color:var(--m)}
+.status-pill.saved{border-color:rgba(0,229,128,.3);color:var(--g);background:rgba(0,229,128,.08)}
+.status-pill.saving{border-color:rgba(255,184,0,.3);color:var(--y);background:rgba(255,184,0,.08)}
+.hbtn{padding:7px 14px;border-radius:8px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px}
+.hbtn-save{background:rgba(0,200,255,.15);color:var(--a);border:1px solid rgba(0,200,255,.25)}.hbtn-save:hover{background:rgba(0,200,255,.28)}
+.hbtn-code{background:rgba(155,109,255,.15);color:var(--p);border:1px solid rgba(155,109,255,.25)}.hbtn-code:hover{background:rgba(155,109,255,.28)}
+.layout{display:flex;flex:1;overflow:hidden}
+aside{width:210px;background:var(--s1);border-right:1px solid var(--b);overflow-y:auto;flex-shrink:0;padding-bottom:16px}
+aside::-webkit-scrollbar{width:4px}aside::-webkit-scrollbar-thumb{background:#1E2E3E;border-radius:2px}
+.cat-hdr{padding:10px 12px 4px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--m);display:flex;align-items:center;gap:6px}
+.cat-hdr::after{content:'';flex:1;height:1px;background:var(--b)}
+.piece-btn{margin:3px 8px;padding:7px 10px;border-radius:9px;border:1px solid transparent;cursor:pointer;display:flex;align-items:center;gap:9px;transition:.15s;background:none}
+.piece-btn:hover{background:var(--s2);border-color:var(--b)}
+.piece-btn.active{background:rgba(0,200,255,.12);border-color:rgba(0,200,255,.4);box-shadow:0 0 0 1px rgba(0,200,255,.2)}
+.p-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center}
+.p-name{font-weight:800;font-size:12px;color:var(--t)}
+.p-sub{font-size:10px;color:var(--m);margin-top:1px}
+#wrap{flex:1;position:relative;overflow:hidden;background:#060A10}
+canvas{display:block;width:100%;height:100%}
+.controls-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  background:rgba(6,10,16,.85);border:1px solid var(--b);border-radius:8px;
+  padding:6px 14px;font-size:10px;color:var(--m);display:flex;gap:12px;white-space:nowrap}
+.controls-hint span{display:flex;align-items:center;gap:4px}
+.key{background:var(--b2);border-radius:4px;padding:1px 5px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;color:var(--t)}
+.placing-banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  background:rgba(0,200,255,.15);border:1px solid rgba(0,200,255,.35);border-radius:20px;
+  padding:6px 16px;font-size:12px;font-weight:800;color:var(--a);display:none;gap:8px;align-items:center;white-space:nowrap}
+.placing-banner.show{display:flex}
+.piece-count{position:absolute;top:12px;right:12px;background:var(--s1);border:1px solid var(--b);
+  border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--m)}
+.panel-right{width:200px;background:var(--s1);border-left:1px solid var(--b);flex-shrink:0;overflow-y:auto;padding:14px}
+.panel-right::-webkit-scrollbar{width:4px}
+.panel-right::-webkit-scrollbar-thumb{background:#1E2E3E;border-radius:2px}
+.pr-ttl{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--m);margin-bottom:12px}
+.pr-empty{color:var(--m);font-size:12px;text-align:center;padding:20px 0;line-height:1.7}
+.sel-info{background:var(--s2);border-radius:10px;padding:12px;border:1px solid var(--b2);margin-bottom:12px}
+.sel-icon{font-size:28px;text-align:center;margin-bottom:6px}
+.sel-name{font-weight:800;font-size:13px;text-align:center;margin-bottom:4px}
+.sel-pos{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--m);text-align:center}
+.pr-btn{width:100%;padding:8px;border-radius:8px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;cursor:pointer;transition:.15s;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:6px}
+.pr-rotate{background:rgba(0,200,255,.12);color:var(--a);border:1px solid rgba(0,200,255,.2)}.pr-rotate:hover{background:rgba(0,200,255,.22)}
+.pr-up{background:rgba(0,229,128,.1);color:var(--g);border:1px solid rgba(0,229,128,.2)}.pr-up:hover{background:rgba(0,229,128,.2)}
+.pr-down{background:rgba(255,184,0,.1);color:var(--y);border:1px solid rgba(255,184,0,.2)}.pr-down:hover{background:rgba(255,184,0,.2)}
+.pr-del{background:rgba(255,68,85,.1);color:var(--r);border:1px solid rgba(255,68,85,.2)}.pr-del:hover{background:rgba(255,68,85,.2)}
+.motor-badge{background:rgba(0,229,128,.12);border:1px solid rgba(0,229,128,.3);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px;color:var(--g);font-weight:700;text-align:center}
+.motor-badge .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--g);margin-right:5px;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--s2);border:1px solid var(--b);border-radius:9px;padding:8px 18px;
+  font-size:12px;font-weight:700;z-index:999;transition:.25s;opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ok{border-color:rgba(0,229,128,.4);color:var(--g)}
+.toast.err{border-color:rgba(255,68,85,.4);color:var(--r)}
+</style>
+</head>
+<body>
+<header>
+  <button class="back-btn" onclick="location.href='/static/index.html'">← Проекты</button>
+  <input class="proj-name" id="proj-name" value="Загрузка..." onblur="saveProjectName()" onkeydown="if(event.key==='Enter')this.blur()">
+  <div class="hfill"></div>
+  <span class="status-pill" id="status">● сохранено</span>
+  <button class="hbtn hbtn-save" onclick="saveProject()">💾 Сохранить</button>
+  <button class="hbtn hbtn-code" onclick="goCode()">💻 Код →</button>
+</header>
+<div class="layout">
+  <aside id="sidebar"></aside>
+  <div id="wrap">
+    <canvas id="c"></canvas>
+    <div class="placing-banner" id="place-banner">Нажми чтобы поставить &nbsp;<span style="opacity:.6;font-size:10px">[ESC — отмена] [R — повернуть]</span></div>
+    <div class="piece-count" id="pc">🧱 0 деталей</div>
+    <div class="controls-hint">
+      <span><span class="key">ПКМ</span> орбита</span>
+      <span><span class="key">СКМ</span> пан</span>
+      <span><span class="key">↕ колесо</span> зум</span>
+      <span><span class="key">R</span> повернуть</span>
+      <span><span class="key">Del</span> удалить</span>
+    </div>
+  </div>
+  <div class="panel-right">
+    <div class="pr-ttl">Деталь</div>
+    <div id="pr-content"><div class="pr-empty">Выбери деталь<br>в палитре или<br>кликни на модели</div></div>
+    <div id="motor-status" style="display:none">
+      <div class="motor-badge"><span class="dot"></span>Мотор работает!</div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const PID = new URLSearchParams(location.search).get('id');
+if(!PID) location.href='/static/index.html';
+
+const CATS=[
+  {id:'elec', label:'Электроника', pieces:['smarthub','motor','motion','tilt']},
+  {id:'brick',label:'Кирпичики',  pieces:['plate8','brick2x4','brick2x2','brick1x4','brick1x2']},
+  {id:'tech', label:'Техник',     pieces:['beam5','beam7','beam11','angbeam']},
+  {id:'mech', label:'Механика',   pieces:['gear8','gear24','wheel','axle4']},
+];
+
+const PDEF={
+  smarthub:{label:'SmartHub',   sub:'Хаб управления',   icon:'🔵',col:0x006CB7,w:4,h:2.4,d:3,studs:true, special:'hub'  },
+  motor:   {label:'Мотор',      sub:'WeDo 2.0 Motor',   icon:'⚙️',col:0x0055AA,w:2,h:2.4,d:3,studs:true, special:'motor'},
+  motion:  {label:'Движение',   sub:'Датчик дистанции', icon:'👁', col:0xDCDCDC,w:2,h:2.4,d:2,studs:false,special:'motion'},
+  tilt:    {label:'Наклон',     sub:'Датчик наклона',   icon:'📐',col:0xE0E0E0,w:2,h:2.4,d:2,studs:false,special:'tilt' },
+  plate8:  {label:'Плита 8×8',  sub:'Основание',        icon:'⬛',col:0x006A42,w:8,h:0.4,d:8,studs:true, isPlate:true   },
+  brick2x4:{label:'Кубик 2×4',  sub:'Стандартный',      icon:'🟥',col:0xC91A09,w:4,h:1.2,d:2,studs:true },
+  brick2x2:{label:'Кубик 2×2',  sub:'Стандартный',      icon:'🟨',col:0xF2CD37,w:2,h:1.2,d:2,studs:true },
+  brick1x4:{label:'Кубик 1×4',  sub:'Узкий',            icon:'🟩',col:0x237841,w:4,h:1.2,d:1,studs:true },
+  brick1x2:{label:'Кубик 1×2',  sub:'Маленький',        icon:'⬜',col:0xF0F0F0,w:2,h:1.2,d:1,studs:true },
+  beam5:   {label:'Балка 1×5',  sub:'Техник',           icon:'▬', col:0x9BA0A3,w:5,h:1.0,d:1,holes:true },
+  beam7:   {label:'Балка 1×7',  sub:'Техник',           icon:'▬', col:0x9BA0A3,w:7,h:1.0,d:1,holes:true },
+  beam11:  {label:'Балка 1×11', sub:'Техник',           icon:'▬', col:0x9BA0A3,w:11,h:1.0,d:1,holes:true},
+  angbeam: {label:'Угл. балка', sub:'Техник угловая',   icon:'↙', col:0x494F54,w:4,h:1.0,d:3,holes:true },
+  gear8:   {label:'Шест. 8T',   sub:'Малая',            icon:'⚙', col:0x494F54,w:1,h:0.6,d:1,isGear:true,teeth:8, gr:0.6 },
+  gear24:  {label:'Шест. 24T',  sub:'Большая',          icon:'⚙', col:0x494F54,w:3,h:0.6,d:3,isGear:true,teeth:24,gr:1.35},
+  wheel:   {label:'Колесо',     sub:'с шиной',          icon:'🔘',col:0x1B2A34,w:2,h:2.0,d:2,isWheel:true},
+  axle4:   {label:'Ось 4L',     sub:'Техник',           icon:'—', col:0x494F54,w:4,h:0.3,d:0.3,isAxle:true},
+};
+
+function lighten(hex,a){const r=(hex>>16)&0xFF,g=(hex>>8)&0xFF,b=hex&0xFF;return(Math.min(255,r+(255-r)*a)<<16)|(Math.min(255,g+(255-g)*a)<<8)|Math.min(255,b+(255-b)*a);}
+function darken(hex,a){const r=(hex>>16)&0xFF,g=(hex>>8)&0xFF,b=hex&0xFF;return((r*(1-a))|0)<<16|((g*(1-a))|0)<<8|((b*(1-a))|0);}
+
+function buildMesh(type,ghost=false){
+  const def=PDEF[type];
+  const group=new THREE.Group();
+  const alpha=ghost?0.45:1;
+  function mat(col){return new THREE.MeshPhongMaterial({color:col,shininess:85,transparent:ghost,opacity:alpha});}
+
+  if(def.isGear){
+    const r=def.gr;
+    group.add(new THREE.Mesh(new THREE.CylinderGeometry(r*0.7,r*0.7,def.h,32),mat(def.col)));
+    for(let i=0;i<def.teeth;i++){
+      const ang=i/def.teeth*Math.PI*2;
+      const t=new THREE.Mesh(new THREE.BoxGeometry(0.18,def.h,0.22),mat(darken(def.col,0.1)));
+      t.position.set(Math.cos(ang)*r*0.88,0,Math.sin(ang)*r*0.88);t.rotation.y=ang;group.add(t);
+    }
+    group.add(new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,def.h*1.1,12),mat(0x1B1B1B)));
+    return group;
+  }
+  if(def.isWheel){
+    const torus=new THREE.Mesh(new THREE.TorusGeometry(0.75,0.38,12,24),mat(0x111111));
+    torus.rotation.x=Math.PI/2;group.add(torus);
+    const rim=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.2,20),mat(0xC0C0C0));
+    rim.rotation.x=Math.PI/2;group.add(rim);
+    const hub=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,0.4,10),mat(0x888888));
+    hub.rotation.x=Math.PI/2;group.add(hub);
+    return group;
+  }
+  if(def.isAxle){
+    const ax=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.1,def.w,8),mat(def.col));
+    ax.rotation.z=Math.PI/2;ax.position.x=def.w/2;group.add(ax);
+    return group;
+  }
+
+  const {w,h,d}=def;
+  const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(def.col));
+  body.position.set(w/2,h/2,d/2);body.castShadow=true;body.receiveShadow=true;
+  group.add(body);
+
+  if(def.studs){
+    const sr=0.28,sh=def.isPlate?0.1:0.18;
+    const sg=new THREE.CylinderGeometry(sr,sr,sh,16);
+    const sm=mat(lighten(def.col,0.12));
+    for(let x=0;x<Math.round(w);x++)for(let z=0;z<Math.round(d);z++){
+      const s=new THREE.Mesh(sg,sm);s.position.set(x+0.5,h+sh/2,z+0.5);group.add(s);
+    }
+  }
+  if(def.holes){
+    const hm=new THREE.MeshPhongMaterial({color:0x030608,transparent:ghost,opacity:ghost?0.4:1});
+    for(let x=0;x<Math.round(w);x++){
+      const hole=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,w*1.05,16),hm);
+      hole.rotation.z=Math.PI/2;hole.position.set(x+0.5,h/2,d/2);group.add(hole);
+    }
+  }
+
+  if(def.special==='hub'){
+    const ledM=new THREE.MeshPhongMaterial({color:0x00FF88,emissive:0x00BB44,transparent:ghost,opacity:alpha});
+    const led=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.22,20),ledM);
+    led.name='hub-led';led.position.set(2,h+0.11,1.5);group.add(led);
+    const pm=mat(darken(def.col,0.35));
+    for(const px of[0.5,w-0.7]){
+      const p=new THREE.Mesh(new THREE.BoxGeometry(0.45,1.0,0.5),pm);
+      p.position.set(px,h/2,-0.35);group.add(p);
+    }
+  }
+  if(def.special==='motor'){
+    const am=new THREE.MeshPhongMaterial({color:0x999999,transparent:ghost,opacity:alpha});
+    const axle=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,1.6,12),am);
+    axle.name='motor-axle';axle.rotation.z=Math.PI/2;axle.position.set(w/2,h/2,d+0.4);group.add(axle);
+    const wheel=new THREE.Mesh(new THREE.CylinderGeometry(0.38,0.38,0.12,16),am);
+    wheel.name='motor-wheel';wheel.rotation.z=Math.PI/2;wheel.position.set(w/2,h/2,d+1.2);group.add(wheel);
+  }
+  if(def.special==='motion'){
+    const lm=new THREE.MeshPhongMaterial({color:0x1122FF,shininess:200,transparent:ghost,opacity:alpha});
+    const lens=new THREE.Mesh(new THREE.SphereGeometry(0.4,16,16),lm);
+    lens.position.set(w/2,h/2,-0.3);group.add(lens);
+  }
+  if(def.special==='tilt'){
+    const im=new THREE.MeshPhongMaterial({color:0xFF8800,transparent:ghost,opacity:alpha});
+    const ind=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.35,0.28),im);
+    ind.position.set(w/2,h+0.17,d/2);group.add(ind);
+  }
+  return group;
+}
+
+// ─── SCENE SETUP ───
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x060A10);
+scene.fog=new THREE.FogExp2(0x060A10,0.015);
+const camera=new THREE.PerspectiveCamera(52,1,0.1,300);
+
+scene.add(new THREE.AmbientLight(0x304060,1.2));
+const sun=new THREE.DirectionalLight(0xFFF4E8,1.8);
+sun.position.set(12,20,10);sun.castShadow=true;
+sun.shadow.mapSize.width=2048;sun.shadow.mapSize.height=2048;
+sun.shadow.camera.near=0.5;sun.shadow.camera.far=80;
+sun.shadow.camera.left=-30;sun.shadow.camera.right=30;
+sun.shadow.camera.top=30;sun.shadow.camera.bottom=-30;
+scene.add(sun);
+const fill=new THREE.DirectionalLight(0x4488FF,0.5);fill.position.set(-10,6,-10);scene.add(fill);
+
+scene.add(new THREE.GridHelper(32,32,0x1A2E3E,0x0E1E2E));
+const floorG=new THREE.PlaneGeometry(32,32);floorG.rotateX(-Math.PI/2);
+const floor=new THREE.Mesh(floorG,new THREE.MeshPhongMaterial({color:0x080E16,transparent:true,opacity:0.6}));
+floor.receiveShadow=true;floor.name='floor';scene.add(floor);
+
+const raycaster=new THREE.Raycaster();
+const mouse2=new THREE.Vector2(-9999,-9999);
+const groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+
+// ─── CAMERA ORBIT ───
+let orb={theta:0.75,phi:0.52,r:22,cx:5,cy:0,cz:5};
+let camDrag=null;
+
+function updateCam(){
+  const {theta,phi,r,cx,cy,cz}=orb;
+  camera.position.set(cx+r*Math.sin(phi)*Math.sin(theta),cy+r*Math.cos(phi),cz+r*Math.sin(phi)*Math.cos(theta));
+  camera.lookAt(cx,cy,cz);
+}
+updateCam();
+
+canvas.addEventListener('mousedown',e=>{
+  if(e.button===2){camDrag={t:'orb',x:e.clientX,y:e.clientY};e.preventDefault();}
+  else if(e.button===1){camDrag={t:'pan',x:e.clientX,y:e.clientY};e.preventDefault();}
+  else if(e.button===0){
+    if(placingType) handlePlace(e);
+    else handleSelect(e);
+  }
+});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+window.addEventListener('mousemove',e=>{
+  if(camDrag){
+    const dx=e.clientX-camDrag.x,dy=e.clientY-camDrag.y;
+    if(camDrag.t==='orb'){
+      orb.theta-=dx*0.005;
+      orb.phi=Math.max(0.08,Math.min(1.45,orb.phi+dy*0.005));
+    } else {
+      const right=new THREE.Vector3();
+      camera.getWorldDirection(right);right.crossVectors(right,new THREE.Vector3(0,1,0)).normalize();
+      orb.cx+=right.x*(-dx)*0.02*(orb.r/20);orb.cz+=right.z*(-dx)*0.02*(orb.r/20);
+      orb.cy+=dy*0.015*(orb.r/20);
+    }
+    camDrag.x=e.clientX;camDrag.y=e.clientY;updateCam();
+  }
+  updateMousePos(e);
+  if(placingType) updateGhost(e);
+});
+window.addEventListener('mouseup',()=>camDrag=null);
+canvas.addEventListener('wheel',e=>{
+  orb.r=Math.max(3,Math.min(60,orb.r*(1+e.deltaY*0.001)));
+  updateCam();e.preventDefault();
+},{passive:false});
+
+function updateMousePos(e){
+  const rect=canvas.getBoundingClientRect();
+  mouse2.x=((e.clientX-rect.left)/rect.width)*2-1;
+  mouse2.y=-((e.clientY-rect.top)/rect.height)*2+1;
+}
+
+// ─── PLACEMENT ───
+let placedPieces=[];
+let placingType=null;
+let ghostGroup=null;
+let selectedId=null;
+let ghostRot=0;
+
+function setPlacing(type){
+  placingType=type;
+  if(ghostGroup){scene.remove(ghostGroup);ghostGroup=null;}
+  if(type){
+    ghostGroup=buildMesh(type,true);
+    scene.add(ghostGroup);
+    document.getElementById('place-banner').classList.add('show');
+    const banner=document.getElementById('place-banner');
+    if(banner.childNodes[0]) banner.childNodes[0].textContent=`Ставим: ${PDEF[type].label} — нажми чтобы поставить `;
+  } else {
+    document.getElementById('place-banner').classList.remove('show');
+  }
+  updateSidebar(); // FIX: always refresh active state
+}
+
+function getGridHit(e){
+  updateMousePos(e);
+  raycaster.setFromCamera(mouse2,camera);
+  const pt=new THREE.Vector3();
+  if(!raycaster.ray.intersectPlane(groundPlane,pt)) return null;
+  return {gx:Math.round(pt.x),gz:Math.round(pt.z)};
+}
+
+function updateGhost(e){
+  if(!ghostGroup||!placingType) return;
+  const hit=getGridHit(e);if(!hit) return;
+  const gy=getTopY(hit.gx,hit.gz,placingType);
+  ghostGroup.position.set(hit.gx,gy,hit.gz);
+  ghostGroup.rotation.y=ghostRot*Math.PI/2;
+}
+
+function getTopY(gx,gz,type){
+  const def=PDEF[type];
+  let maxY=0;
+  for(const p of placedPieces){
+    const pd=PDEF[p.type];
+    if(!(gx+def.w<=p.gx||gx>=p.gx+pd.w||gz+def.d<=p.gz||gz>=p.gz+pd.d)){
+      const top=p.gy+pd.h;if(top>maxY)maxY=top;
+    }
+  }
+  return maxY;
+}
+
+function handlePlace(e){
+  const hit=getGridHit(e);if(!hit) return;
+  const gy=getTopY(hit.gx,hit.gz,placingType);
+  const g=buildMesh(placingType,false);
+  g.position.set(hit.gx,gy,hit.gz);
+  g.rotation.y=ghostRot*Math.PI/2;
+  g.castShadow=true;
+  const id='p'+Date.now()+Math.random().toString(36).substr(2,4);
+  g.userData={id,type:placingType,gx:hit.gx,gy,gz:hit.gz,rot:ghostRot};
+  scene.add(g);
+  placedPieces.push({id,group:g,type:placingType,gx:hit.gx,gy,gz:hit.gz,rot:ghostRot});
+  updatePcCount();markDirty();
+}
+
+function handleSelect(e){
+  updateMousePos(e);
+  raycaster.setFromCamera(mouse2,camera);
+  const meshes=[];
+  for(const p of placedPieces) p.group.traverseVisible(o=>{if(o.isMesh)meshes.push(o);});
+  const hits=raycaster.intersectObjects(meshes);
+  if(!hits.length){setSelected(null);return;}
+  let grp=hits[0].object;
+  while(grp.parent&&!grp.userData?.id) grp=grp.parent;
+  setSelected(grp.userData?.id||null);
+}
+
+function setSelected(id){selectedId=id;renderPropPanel();}
+
+function renderPropPanel(){
+  const el=document.getElementById('pr-content');
+  if(!selectedId){el.innerHTML='<div class="pr-empty">Выбери деталь<br>в палитре или<br>кликни на модели</div>';return;}
+  const p=placedPieces.find(x=>x.id===selectedId);if(!p){el.innerHTML='';return;}
+  const def=PDEF[p.type];
+  el.innerHTML=`<div class="sel-info">
+    <div class="sel-icon">${def.icon}</div>
+    <div class="sel-name">${def.label}</div>
+    <div class="sel-pos">X:${p.gx} Y:${p.gy.toFixed(1)} Z:${p.gz}</div>
+  </div>
+  <button class="pr-btn pr-rotate" onclick="rotateSel()">↻ Повернуть (R)</button>
+  <button class="pr-btn pr-up" onclick="moveSel(1)">↑ Выше</button>
+  <button class="pr-btn pr-down" onclick="moveSel(-1)">↓ Ниже</button>
+  <button class="pr-btn pr-del" onclick="deleteSel()">🗑 Удалить</button>`;
+}
+
+function rotateSel(){
+  const p=placedPieces.find(x=>x.id===selectedId);if(!p)return;
+  p.rot=(p.rot+1)%4;p.group.rotation.y=p.rot*Math.PI/2;markDirty();
+}
+function moveSel(dir){
+  const p=placedPieces.find(x=>x.id===selectedId);if(!p)return;
+  p.gy=Math.max(0,p.gy+dir*PDEF[p.type].h);
+  p.group.position.y=p.gy;markDirty();renderPropPanel();
+}
+function deleteSel(){
+  if(!selectedId)return;
+  const idx=placedPieces.findIndex(x=>x.id===selectedId);if(idx<0)return;
+  scene.remove(placedPieces[idx].group);placedPieces.splice(idx,1);
+  setSelected(null);updatePcCount();markDirty();
+}
+
+function updatePcCount(){document.getElementById('pc').textContent=`🧱 ${placedPieces.length} дет.`;}
+
+// ─── SIDEBAR ───
+function updateSidebar(){
+  document.getElementById('sidebar').innerHTML=CATS.map(cat=>`
+  <div class="cat-hdr">${cat.label}</div>
+  ${cat.pieces.map(type=>{const def=PDEF[type];return`
+  <div class="piece-btn${placingType===type?' active':''}" onclick="setPlacing(placingType==='${type}'?null:'${type}')">
+    <span class="p-icon">${def.icon}</span>
+    <div class="p-info"><div class="p-name">${def.label}</div><div class="p-sub">${def.sub}</div></div>
+  </div>`;}).join('')}`).join('');
+}
+
+// ─── KEYBOARD ───
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  if(e.key==='r'||e.key==='R'){if(placingType)ghostRot=(ghostRot+1)%4;else rotateSel();}
+  if(e.key==='Escape') setPlacing(null);
+  if(e.key==='Delete'||e.key==='Backspace') deleteSel();
+});
+
+// ─── MOTOR (BroadcastChannel receive) ───
+let motorOn=false,motorPower=5;
+try{
+  const bc=new BroadcastChannel('wedo_motor');
+  bc.onmessage=ev=>{
+    if(ev.data.type==='motor_on'){
+      motorOn=true;motorPower=ev.data.power||5;
+      document.getElementById('motor-status').style.display='block';
+    }
+    if(ev.data.type==='motor_off'){
+      motorOn=false;
+      document.getElementById('motor-status').style.display='none';
+    }
+  };
+}catch(ex){}
+
+// ─── SAVE / LOAD ───
+let dirty=false,saveTimer=null;
+function markDirty(){
+  dirty=true;setStatus('saving');
+  clearTimeout(saveTimer);saveTimer=setTimeout(saveProject,8000);
+}
+function setStatus(s){
+  const el=document.getElementById('status');
+  if(s==='saved'){el.textContent='● сохранено';el.className='status-pill saved';}
+  else if(s==='saving'){el.textContent='● сохранение...';el.className='status-pill saving';}
+  else{el.textContent='● не сохранено';el.className='status-pill';}
+}
+
+function serializeState(){
+  return {pieces:placedPieces.map(p=>({type:p.type,gx:p.gx,gy:p.gy,gz:p.gz,rot:p.rot||0}))};
+}
+function deserialize(state){
+  if(!state||!state.pieces) return;
+  for(const p of state.pieces){
+    const g=buildMesh(p.type,false);
+    g.position.set(p.gx,p.gy,p.gz);
+    g.rotation.y=(p.rot||0)*Math.PI/2;
+    g.castShadow=true;
+    const id='p'+Math.random().toString(36).substr(2,9);
+    g.userData={id,type:p.type,gx:p.gx,gy:p.gy,gz:p.gz,rot:p.rot||0};
+    scene.add(g);
+    placedPieces.push({id,group:g,type:p.type,gx:p.gx,gy:p.gy,gz:p.gz,rot:p.rot||0});
+  }
+  updatePcCount();
+}
+
+async function loadProject(){
+  try{
+    const d=await(await fetch(`/api/projects/${PID}`)).json();
+    document.getElementById('proj-name').value=d.name||'Проект';
+    if(d.lego_state) deserialize(d.lego_state);
+    setStatus('saved');
+  }catch(e){toast('Ошибка загрузки','err');}
+}
+async function saveProject(){
+  try{
+    setStatus('saving');
+    const name=document.getElementById('proj-name').value.trim()||'Проект';
+    const lego_state=serializeState();
+    renderer.render(scene,camera);
+    const thumbnail=canvas.toDataURL('image/jpeg',0.6);
+    await fetch(`/api/projects/${PID}`,{method:'PUT',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,lego_state,thumbnail})});
+    dirty=false;setStatus('saved');toast('Сохранено!','ok');
+  }catch(e){toast('Ошибка сохранения','err');}
+}
+async function saveProjectName(){
+  const name=document.getElementById('proj-name').value.trim()||'Проект';
+  try{await fetch(`/api/projects/${PID}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});}catch{}
+}
+function goCode(){saveProject().then(()=>location.href=`/static/codeblocks.html?id=${PID}`);}
+
+let tt;function toast(m,t='ok'){const el=document.getElementById('toast');el.textContent=m;el.className=`toast show ${t}`;clearTimeout(tt);tt=setTimeout(()=>el.className='toast',2200);}
+
+// ─── RESIZE & RENDER LOOP ───
+function resize(){
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  if(canvas.width!==w||canvas.height!==h){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+}
+function loop(){
+  requestAnimationFrame(loop);resize();
+  if(motorOn){
+    const spd=motorPower*0.04;
+    for(const p of placedPieces){
+      if(p.type==='motor'){
+        const a=p.group.getObjectByName('motor-axle');
+        const w=p.group.getObjectByName('motor-wheel');
+        if(a)a.rotation.x+=spd;if(w)w.rotation.x+=spd;
+      }
+      if(p.type==='gear8'||p.type==='gear24') p.group.rotation.y+=spd*0.5;
+    }
+  }
+  renderer.render(scene,camera);
+}
+
+updateSidebar();
+loadProject();
+loop();
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WeDo 2.0 — Проекты</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#080C12;--s1:#0E1520;--s2:#141C28;--b:#1E2A3A;--b2:#243040;
+  --t:#D8E4F0;--m:#6A7F96;--a:#00C8FF;--g:#00E580;--r:#FF4455;--p:#9B6DFF}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+header{height:60px;background:var(--s1);border-bottom:1px solid var(--b);display:flex;align-items:center;padding:0 28px;gap:14px;position:sticky;top:0;z-index:100}
+.logo-box{width:36px;height:36px;background:linear-gradient(135deg,#FF6B1A,#FF9200);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-weight:900;font-size:17px}.logo-text span{color:var(--m);font-weight:600}
+.hfill{flex:1}
+.hbadge{background:rgba(0,200,255,.12);border:1px solid rgba(0,200,255,.25);color:var(--a);font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px}
+.hero{padding:48px 28px 28px;max-width:1200px;margin:0 auto}
+.hero h1{font-size:28px;font-weight:900;margin-bottom:6px}.hero h1 span{color:var(--a)}
+.hero p{color:var(--m);font-size:14px;margin-bottom:28px}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{padding:10px 20px;border-radius:10px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:.15s all;display:flex;align-items:center;gap:7px}
+.btn-primary{background:var(--a);color:#000}.btn-primary:hover{background:#33D4FF;transform:scale(1.02)}
+.btn-secondary{background:var(--s2);color:var(--t);border:1px solid var(--b)}.btn-secondary:hover{border-color:var(--a);color:var(--a)}
+main{max-width:1200px;margin:0 auto;padding:0 28px 48px}
+.section-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--m);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--b)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.card{background:var(--s1);border:1px solid var(--b);border-radius:14px;overflow:hidden;transition:.18s all}
+.card:hover{border-color:rgba(0,200,255,.4);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.card-thumb{height:140px;overflow:hidden;position:relative}
+.card-thumb img{width:100%;height:100%;object-fit:cover}
+.card-thumb-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:52px}
+.g0{background:linear-gradient(135deg,#0d2040,#091428)}
+.g1{background:linear-gradient(135deg,#1d1a30,#120d22)}
+.g2{background:linear-gradient(135deg,#0d2010,#08150a)}
+.g3{background:linear-gradient(135deg,#2a1a14,#1a0d08)}
+.g4{background:linear-gradient(135deg,#1a1040,#100828)}
+.card-body{padding:14px 16px 12px}
+.card-name-inp{background:none;border:none;border-bottom:1px solid transparent;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;color:var(--t);width:100%;outline:none;margin-bottom:5px;transition:.15s}
+.card-name-inp:focus{border-bottom-color:var(--a)}
+.card-meta{font-size:11px;color:var(--m);display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.pill{border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.2);color:var(--a)}
+.card-actions{display:flex;gap:7px}
+.cta{flex:1;padding:7px 0;border-radius:8px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.cta-build{background:rgba(0,200,255,.12);color:var(--a);border:1px solid rgba(0,200,255,.2)}.cta-build:hover{background:rgba(0,200,255,.22)}
+.cta-code{background:rgba(155,109,255,.12);color:var(--p);border:1px solid rgba(155,109,255,.2)}.cta-code:hover{background:rgba(155,109,255,.22)}
+.cta-del{padding:7px 10px;border-radius:8px;border:1px solid var(--b);background:none;color:var(--m);cursor:pointer;transition:.15s}.cta-del:hover{border-color:var(--r);color:var(--r)}
+.empty{text-align:center;padding:80px 20px;color:var(--m)}
+.empty-icon{font-size:60px;margin-bottom:16px}
+.empty h3{font-size:17px;font-weight:800;color:var(--t);margin-bottom:6px}
+.empty p{font-size:13px;margin-bottom:20px}
+.spinner{width:18px;height:18px;border:2px solid rgba(0,200,255,.2);border-top-color:var(--a);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-wrap{display:flex;align-items:center;justify-content:center;height:180px;gap:12px;color:var(--m);font-size:13px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.2s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal{background:var(--s1);border:1px solid var(--b2);border-radius:16px;padding:28px;width:360px;transform:scale(.95);transition:.2s}
+.modal-bg.open .modal{transform:scale(1)}
+.modal h2{font-size:16px;font-weight:900;margin-bottom:16px}
+.modal input{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--b2);border-radius:9px;color:var(--t);font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;outline:none;margin-bottom:16px}
+.modal input:focus{border-color:var(--a)}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;z-index:9999;transition:.3s;opacity:0;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ok{border-color:rgba(0,229,128,.4);color:var(--g)}
+.toast.err{border-color:rgba(255,68,85,.4);color:var(--r)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-box">🤖</div>
+  <div class="logo-text">WeDo 2.0 <span>Simulator</span></div>
+  <div class="hfill"></div>
+  <div class="hbadge">PROTOTYPE v1.0</div>
+</header>
+<div class="hero">
+  <h1>Мои <span>проекты</span> 🚀</h1>
+  <p>Собирай LEGO в 3D, пиши блок-код для моторчика и смотри результат в реальном времени!</p>
+  <div class="hero-actions">
+    <button class="btn btn-primary" onclick="openModal()">＋ Новый проект</button>
+    <button class="btn btn-secondary" onclick="load()">↻ Обновить</button>
+  </div>
+</div>
+<main>
+  <div class="section-title">Все проекты</div>
+  <div id="cont"><div class="loading-wrap"><div class="spinner"></div> Загрузка...</div></div>
+</main>
+
+<div class="modal-bg" id="mbg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2>✏️ Название проекта</h2>
+    <input id="mname" type="text" placeholder="Например: Мой робот-кран" maxlength="64"
+           onkeydown="if(event.key==='Enter')confirmCreate()">
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="confirmCreate()">Создать →</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const EMOJIS=['🤖','🚁','🚗','🦅','⚙️','🏗️','🚢','🦾','🔧','🛸'];
+const GS=['g0','g1','g2','g3','g4'];
+const rel=iso=>{const d=new Date(iso),s=(Date.now()-d)/1000;
+  if(s<60)return'только что';if(s<3600)return~~(s/60)+' мин назад';
+  if(s<86400)return~~(s/3600)+' ч назад';return~~(s/86400)+' дн назад';};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+
+async function load(){
+  const c=document.getElementById('cont');
+  c.innerHTML='<div class="loading-wrap"><div class="spinner"></div> Загрузка...</div>';
+  try{
+    const ps=await(await fetch('/api/projects')).json();
+    if(!ps.length){c.innerHTML=`<div class="empty"><div class="empty-icon">📦</div><h3>Пока нет проектов</h3><p>Создай первый и начни строить!</p><button class="btn btn-primary" onclick="openModal()">＋ Создать</button></div>`;return;}
+    c.innerHTML=`<div class="grid">${ps.map(renderCard).join('')}</div>`;
+  }catch(e){c.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><h3>Ошибка</h3><p>${e.message}</p><button class="btn btn-secondary" onclick="load()">Повторить</button></div>`;}
+}
+
+function renderCard(p){
+  const thumb=p.thumbnail?`<img src="${p.thumbnail}">`:`<div class="card-thumb-ph ${GS[p.id%5]}">${EMOJIS[p.id%10]}</div>`;
+  return`<div class="card" id="c${p.id}">
+  <div class="card-thumb">${thumb}</div>
+  <div class="card-body">
+    <input class="card-name-inp" value="${esc(p.name)}" onblur="rename(${p.id},this.value)" onkeydown="if(event.key==='Enter')this.blur()" onclick="event.stopPropagation()">
+    <div class="card-meta"><span>${rel(p.updated_at)}</span><span class="pill">🧱 ${p.piece_count||0} дет.</span></div>
+    <div class="card-actions">
+      <button class="cta cta-build" onclick="location.href='/static/simulator.html?id=${p.id}'">🧱 Строить</button>
+      <button class="cta cta-code" onclick="location.href='/static/codeblocks.html?id=${p.id}'">💻 Код</button>
+      <button class="cta-del" onclick="del(event,${p.id})" title="Удалить">🗑</button>
+    </div>
+  </div></div>`;
+}
+
+async function rename(id,v){
+  if(!v.trim())return;
+  try{await fetch(`/api/projects/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:v.trim()})});toast('Сохранено','ok');}catch{toast('Ошибка','err');}
+}
+async function del(e,id){
+  e.stopPropagation();if(!confirm('Удалить проект?'))return;
+  try{await fetch(`/api/projects/${id}`,{method:'DELETE'});document.getElementById('c'+id)?.remove();toast('Удалено','ok');}catch{toast('Ошибка','err');}
+}
+function openModal(){document.getElementById('mbg').classList.add('open');setTimeout(()=>document.getElementById('mname').focus(),80);}
+function closeModal(){document.getElementById('mbg').classList.remove('open');}
+async function confirmCreate(){
+  const n=document.getElementById('mname').value.trim()||'Новый проект';closeModal();
+  try{const p=await(await fetch('/api/projects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n})})).json();
+  toast('Проект создан!','ok');location.href='/static/simulator.html?id='+p.id;}catch{toast('Ошибка создания','err');}
+}
+let tt;function toast(m,t='ok'){const el=document.getElementById('toast');el.textContent=m;el.className=`toast show ${t}`;clearTimeout(tt);tt=setTimeout(()=>el.className='toast',2500);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+load();
+</script>
+</body>
+</html>
