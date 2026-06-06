@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
 import asyncpg, json
@@ -42,6 +43,11 @@ class ProjectUpdate(BaseModel):
     lego_state: Optional[dict] = None
     code_state: Optional[dict] = None
     thumbnail: Optional[str] = None
+
+# Твои API эндпоинты (лучше делать с префиксом /api)
+@app.get("/api/status")
+def get_status():
+    return {"status": "ok"}
 
 @app.get("/api/projects")
 async def list_projects():
@@ -126,6 +132,8 @@ async def delete_project(pid: int):
         return {"ok": True}
     finally:
         await conn.close()
+
+app.mount("/", StaticFiles(directory="../frontend/dist", html=True), name="frontend")
 
 if __name__ == "__main__":
     import uvicorn
