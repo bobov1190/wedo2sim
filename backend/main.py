@@ -1,14 +1,17 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import asyncpg, json
 
-app = FastAPI(title="WeDo 2.0 Simulator")
+app = FastAPI(title="WeDo 2.0 API")
 
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 DB = "postgresql://neondb_owner:npg_GIyClbNQO74q@ep-sweet-pond-a2y1ztoo-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require"
 
@@ -39,10 +42,6 @@ class ProjectUpdate(BaseModel):
     lego_state: Optional[dict] = None
     code_state: Optional[dict] = None
     thumbnail: Optional[str] = None
-
-@app.get("/")
-async def root():
-    return RedirectResponse(url="/static/index.html")
 
 @app.get("/api/projects")
 async def list_projects():
@@ -106,6 +105,7 @@ async def update_project(pid: int, data: ProjectUpdate):
             parts.append(f"code_state=${i}"); vals.append(json.dumps(data.code_state)); i+=1
         if data.thumbnail is not None:
             parts.append(f"thumbnail=${i}"); vals.append(data.thumbnail); i+=1
+        if not parts: return {"ok": True}
         parts.append("updated_at=NOW()")
         vals.append(pid)
         row = await conn.fetchrow(
@@ -126,8 +126,6 @@ async def delete_project(pid: int):
         return {"ok": True}
     finally:
         await conn.close()
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
     import uvicorn

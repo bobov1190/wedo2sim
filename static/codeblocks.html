@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>WeDo 2.0 Simulator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WeDo 2.0 — Код</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -13,31 +14,43 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);
   height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none}
-
-/* ─── HEADER ─── */
 #header{height:52px;background:#0A0F16;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0}
-.logo{display:flex;align-items:center;gap:9px;font-weight:900;font-size:16px;color:var(--accent)}
-.logo-icon{width:30px;height:30px;background:linear-gradient(135deg,#FF5F1F,#FF9200);
-  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+  display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+.back-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--border);
+  background:none;color:var(--muted);font-family:'Nunito',sans-serif;
+  font-weight:700;font-size:12px;cursor:pointer;transition:.15s}
+.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+.proj-name{font-weight:900;font-size:14px;color:var(--text);background:none;
+  border:none;border-bottom:1px solid transparent;outline:none;
+  font-family:'Nunito',sans-serif;min-width:120px;transition:.15s}
+.proj-name:focus{border-bottom-color:var(--accent)}
+.status-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;
+  border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.status-pill.saved{border-color:rgba(0,229,128,.3);color:#3FB950;background:rgba(0,229,128,.08)}
+.status-pill.saving{border-color:rgba(255,184,0,.3);color:#FFB800;background:rgba(255,184,0,.08)}
 #run-ind{display:flex;align-items:center;gap:6px;padding:4px 11px;
   background:rgba(46,160,67,.2);border:1px solid #2EA043;border-radius:20px;
   font-size:11px;font-weight:800;color:#3FB950}
 .run-dot{width:6px;height:6px;border-radius:50%;background:#3FB950;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
 .sep{flex:1}
-.btn{padding:7px 15px;border-radius:7px;border:none;font-family:'Nunito',sans-serif;
-  font-weight:800;font-size:13px;cursor:pointer;transition:.15s all;outline:none}
-.btn-run{background:#2EA043;color:#fff}.btn-run:hover{background:#3FB950;transform:scale(1.03)}
-.btn-run:active{transform:scale(.97)}
+.btn{padding:7px 14px;border-radius:7px;border:none;font-family:'Nunito',sans-serif;
+  font-weight:800;font-size:12px;cursor:pointer;transition:.15s all;outline:none;
+  display:flex;align-items:center;gap:5px}
+.btn-run{background:#2EA043;color:#fff}.btn-run:hover{background:#3FB950}
 .btn-stop{background:#DA3633;color:#fff}.btn-stop:hover{background:#E74C3C}
 .btn-clear{background:transparent;color:var(--muted);border:1px solid var(--border)}
 .btn-clear:hover{border-color:var(--muted);color:var(--text)}
-
-/* ─── MAIN ─── */
+.btn-save{background:rgba(0,212,255,.12);color:var(--accent);border:1px solid rgba(0,212,255,.25)}
+.btn-save:hover{background:rgba(0,212,255,.25)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:#1E2835;border:1px solid var(--border);border-radius:9px;
+  padding:8px 18px;font-size:12px;font-weight:700;z-index:9999;transition:.25s;
+  opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ok{border-color:rgba(0,229,128,.4);color:#3FB950}
+.toast.err{border-color:rgba(255,68,85,.4);color:#FF4455}
 #main{display:flex;flex:1;overflow:hidden}
-
-/* ─── PALETTE ─── */
 #palette{width:228px;background:var(--panel);border-right:1px solid var(--border);
   overflow-y:auto;flex-shrink:0;padding-bottom:24px}
 #palette::-webkit-scrollbar{width:4px}
@@ -51,12 +64,8 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);
 .pb:hover{transform:translateX(3px);filter:brightness(1.2)}
 .pb:active{cursor:grabbing;transform:scale(.97)}
 .pb-icon{font-size:13px;flex-shrink:0}
-
-/* ─── CANVAS ─── */
-#canvas-wrap{flex:1;position:relative;overflow:hidden;
-  background:#090E16;
-  background-image:
-    radial-gradient(ellipse at 50% 20%,rgba(0,212,255,.04) 0,transparent 55%),
+#canvas-wrap{flex:1;position:relative;overflow:hidden;background:#090E16;
+  background-image:radial-gradient(ellipse at 50% 20%,rgba(0,212,255,.04) 0,transparent 55%),
     linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),
     linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
   background-size:100% 100%,44px 44px,44px 44px}
@@ -65,8 +74,6 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);
   text-align:center;pointer-events:none;opacity:.18}
 #hint .hi{font-size:52px;margin-bottom:10px}
 #hint .ht{font-size:14px;font-weight:700;line-height:1.7;color:var(--text)}
-
-/* ─── CANVAS BLOCKS ─── */
 .cb{position:absolute;border-radius:10px;font-weight:700;font-size:12.5px;
   cursor:grab;display:flex;align-items:center;gap:7px;
   box-shadow:0 4px 16px rgba(0,0,0,.55);padding:9px 11px 9px 12px;
@@ -77,58 +84,40 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);
 .cb.exec{animation:bexec .25s ease-out}
 @keyframes bexec{0%{filter:brightness(2.5)}100%{filter:brightness(1)}}
 .cb.snap-hl{outline:2px solid var(--accent);outline-offset:3px}
-
-/* Connector tabs */
 .btab{position:absolute;bottom:-5px;left:24px;width:22px;height:5px;
   border-radius:0 0 4px 4px;pointer-events:none}
 .bnotch{position:absolute;top:-5px;left:24px;width:22px;height:5px;
   border-radius:4px 4px 0 0;background:rgba(0,0,0,.45);pointer-events:none}
-
-/* C-block */
 .cbl-wrap{position:absolute;display:flex;flex-direction:column;cursor:default}
 .cbl-head{border-radius:10px 10px 4px 4px;font-weight:700;font-size:12.5px;
-  display:flex;align-items:center;gap:7px;
-  box-shadow:0 4px 16px rgba(0,0,0,.55);padding:9px 11px;min-width:150px;
-  cursor:grab;white-space:nowrap}
+  display:flex;align-items:center;gap:7px;box-shadow:0 4px 16px rgba(0,0,0,.55);
+  padding:9px 11px;min-width:150px;cursor:grab;white-space:nowrap}
 .cbl-head.hat{border-top-left-radius:22px;border-top-right-radius:22px}
 .cbl-arm{display:flex}
 .cbl-side{width:22px;flex-shrink:0;min-height:44px;border-radius:0 0 0 6px}
-.cbl-inner{flex:1;min-height:44px;min-width:120px;
-  background:rgba(0,0,0,.25);border:2px dashed rgba(255,255,255,.12);
-  border-left:none;border-radius:0 8px 8px 0;
+.cbl-inner{flex:1;min-height:44px;min-width:120px;background:rgba(0,0,0,.25);
+  border:2px dashed rgba(255,255,255,.12);border-left:none;border-radius:0 8px 8px 0;
   display:flex;align-items:center;justify-content:center;position:relative}
 .inner-hint{font-size:11px;color:rgba(255,255,255,.18);font-weight:700;pointer-events:none}
-.cbl-cap{height:20px;border-radius:0 6px 10px 10px;
-  box-shadow:0 4px 10px rgba(0,0,0,.4)}
-
-/* Inputs inside blocks */
-.bi-num{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.18);
-  border-radius:6px;padding:2px 7px;color:inherit;
-  font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;
-  width:48px;text-align:center;cursor:text}
+.cbl-cap{height:20px;border-radius:0 6px 10px 10px;box-shadow:0 4px 10px rgba(0,0,0,.4)}
+.bi-num{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.18);border-radius:6px;
+  padding:2px 7px;color:inherit;font-family:'JetBrains Mono',monospace;font-size:12px;
+  font-weight:600;width:48px;text-align:center;cursor:text}
 .bi-num:focus{outline:none;border-color:rgba(255,255,255,.5);background:rgba(0,0,0,.5)}
 .bi-num.wide{width:70px}
-.bi-sel{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.18);
-  border-radius:6px;padding:2px 6px;color:inherit;
-  font-family:'Nunito',sans-serif;font-size:11.5px;font-weight:700;
-  cursor:pointer;-webkit-appearance:none;max-width:80px}
+.bi-sel{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.18);border-radius:6px;
+  padding:2px 6px;color:inherit;font-family:'Nunito',sans-serif;font-size:11.5px;
+  font-weight:700;cursor:pointer;-webkit-appearance:none;max-width:80px}
 .bi-color{width:30px;height:22px;border-radius:5px;border:1px solid rgba(255,255,255,.2);
   cursor:pointer;padding:0;background:none}
-.bi-txt{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.18);
-  border-radius:6px;padding:2px 7px;color:inherit;
-  font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;
-  width:76px;cursor:text}
+.bi-txt{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.18);border-radius:6px;
+  padding:2px 7px;color:inherit;font-family:'Nunito',sans-serif;font-size:12px;
+  font-weight:700;width:76px;cursor:text}
 .bi-txt:focus{outline:none;border-color:rgba(255,255,255,.5)}
-.del-btn{margin-left:auto;background:none;border:none;
-  color:rgba(255,255,255,.22);cursor:pointer;font-size:14px;
-  padding:0 3px;line-height:1;transition:color .1s;flex-shrink:0}
+.del-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.22);
+  cursor:pointer;font-size:14px;padding:0 3px;line-height:1;transition:color .1s;flex-shrink:0}
 .del-btn:hover{color:rgba(255,80,80,.85)}
-
-/* ─── GHOST ─── */
-#ghost{position:fixed;pointer-events:none;z-index:9999;
-  opacity:.82;transform:rotate(2deg) scale(1.04)}
-
-/* ─── SIMULATOR ─── */
+#ghost{position:fixed;pointer-events:none;z-index:9999;opacity:.82;transform:rotate(2deg) scale(1.04)}
 #simulator{width:264px;background:var(--panel);border-left:1px solid var(--border);
   display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
 #simulator::-webkit-scrollbar{width:4px}
@@ -136,17 +125,13 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);
 .sim-sec{padding:13px 14px;border-bottom:1px solid var(--border)}
 .sim-ttl{font-weight:900;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--muted);margin-bottom:10px}
-
-/* Hub */
-.hub-wrap{background:#141E2A;border-radius:14px;padding:14px;
-  border:1px solid #1E2E3E;display:flex;flex-direction:column;align-items:center;gap:10px}
-.hub-body{width:104px;height:68px;
-  background:linear-gradient(150deg,#1E2D3D,#131D2A);
+.hub-wrap{background:#141E2A;border-radius:14px;padding:14px;border:1px solid #1E2E3E;
+  display:flex;flex-direction:column;align-items:center;gap:10px}
+.hub-body{width:104px;height:68px;background:linear-gradient(150deg,#1E2D3D,#131D2A);
   border-radius:12px;border:2px solid #2A3D50;position:relative;
   display:flex;align-items:center;justify-content:center;
   box-shadow:inset 0 2px 4px rgba(255,255,255,.04),0 5px 15px rgba(0,0,0,.5)}
-.hub-led{width:16px;height:16px;border-radius:50%;
-  background:#1A1A1A;transition:.35s all;border:1px solid #333}
+.hub-led{width:16px;height:16px;border-radius:50%;background:#1A1A1A;transition:.35s all;border:1px solid #333}
 .hub-btn{position:absolute;bottom:8px;right:10px;width:15px;height:9px;
   background:#2A3A4A;border-radius:3px;border:1px solid #3A4A5A}
 .hub-port{position:absolute;width:12px;height:7px;background:#080D12;
@@ -154,27 +139,20 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);
 .hub-p1{top:10px;left:8px}.hub-p2{top:10px;right:8px}
 .hub-lbl{font-size:7px;font-weight:900;color:rgba(255,255,255,.22);letter-spacing:.1em}
 .hub-row{display:flex;align-items:center;gap:10px}
-.light-ring{width:40px;height:40px;border-radius:50%;
-  border:3px solid #1E2E3E;display:flex;align-items:center;justify-content:center;
-  transition:.35s all;flex-shrink:0}
-.light-core{width:26px;height:26px;border-radius:50%;
-  background:#111;transition:.35s all}
+.light-ring{width:40px;height:40px;border-radius:50%;border:3px solid #1E2E3E;
+  display:flex;align-items:center;justify-content:center;transition:.35s all;flex-shrink:0}
+.light-core{width:26px;height:26px;border-radius:50%;background:#111;transition:.35s all}
 .led-lbl{font-size:11px;font-weight:700;color:var(--muted)}
 .led-hex{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px}
-
-/* Motor */
-.motor-box{background:#141E2A;border-radius:10px;padding:10px 12px;
-  border:1px solid #1E2E3E;margin-top:8px}
+.motor-box{background:#141E2A;border-radius:10px;padding:10px 12px;border:1px solid #1E2E3E;margin-top:8px}
 .mrow{display:flex;align-items:center;gap:10px;margin-top:7px}
-.mwheel{width:48px;height:48px;border-radius:50%;
-  background:linear-gradient(135deg,#1A2835,#0F1820);
+.mwheel{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#1A2835,#0F1820);
   border:3px solid #2A3848;position:relative;flex-shrink:0;overflow:hidden}
-.mspoke{position:absolute;width:100%;height:2px;
-  background:rgba(0,212,255,.55);top:calc(50%-1px);transform-origin:center}
-.mspoke2{position:absolute;width:100%;height:2px;
-  background:rgba(0,212,255,.25);top:calc(50%-1px);transform-origin:center;transform:rotate(90deg)}
-.mctr{position:absolute;inset:8px;border-radius:50%;
-  background:#090E14;border:1px solid #1A2835}
+.mspoke{position:absolute;width:100%;height:2px;background:rgba(0,212,255,.55);
+  top:calc(50% - 1px);transform-origin:center}
+.mspoke2{position:absolute;width:100%;height:2px;background:rgba(0,212,255,.25);
+  top:calc(50% - 1px);transform-origin:center;transform:rotate(90deg)}
+.mctr{position:absolute;inset:8px;border-radius:50%;background:#090E14;border:1px solid #1A2835}
 @keyframes mspin{to{transform:rotate(360deg)}}
 @keyframes mspinr{to{transform:rotate(-360deg)}}
 .mwheel.on .mspoke,.mwheel.on .mspoke2{animation:mspin linear infinite}
@@ -184,117 +162,106 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);
 .mstatus.on{color:var(--output)}
 .mpbar{height:5px;background:#080D12;border-radius:3px;margin-top:5px;overflow:hidden}
 .mpfill{height:100%;background:var(--output);border-radius:3px;width:0%;transition:.3s width}
-
-/* Sensors */
-.srow{display:flex;gap:8px;margin-top:0}
-.sbox{background:#141E2A;border-radius:10px;padding:9px 11px;
-  border:1px solid #1E2E3E;flex:1}
+.srow{display:flex;gap:8px}
+.sbox{background:#141E2A;border-radius:10px;padding:9px 11px;border:1px solid #1E2E3E;flex:1}
 .sname{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.sval{font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:600;
-  color:var(--input);margin:3px 0 0}
+.sval{font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:600;color:var(--input);margin:3px 0 0}
 .dist-sl{width:100%;-webkit-appearance:none;height:5px;border-radius:3px;
   background:#0A0F16;outline:none;margin-top:6px;cursor:pointer}
 .dist-sl::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
-  border-radius:50%;background:var(--input);cursor:pointer;
-  box-shadow:0 0 6px var(--input)}
-.tilt-grid{display:grid;grid-template-columns:repeat(3,1fr);
-  gap:4px;width:92px;height:92px;margin:7px auto 0}
-.tbtn{background:#1A2835;border:1px solid #2A3848;border-radius:5px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:13px;transition:.15s all}
+  border-radius:50%;background:var(--input);cursor:pointer;box-shadow:0 0 6px var(--input)}
+.tilt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:92px;height:92px;margin:7px auto 0}
+.tbtn{background:#1A2835;border:1px solid #2A3848;border-radius:5px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:13px;transition:.15s all}
 .tbtn:hover{background:#2A3848}
 .tbtn.active{background:var(--input);border-color:var(--input)}
-
-/* Display + Console */
 .disp-out{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:600;
   color:var(--display);text-align:center;min-height:36px;
   display:flex;align-items:center;justify-content:center;
-  background:#110D1E;border-radius:8px;padding:5px 10px;
-  border:1px solid #221A33;margin-bottom:8px;word-break:break-all}
-.sim-log{background:#090D0E;border-radius:8px;padding:8px;
-  font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6FD86A;
-  min-height:72px;max-height:130px;overflow-y:auto;border:1px solid #142014}
+  background:#110D1E;border-radius:8px;padding:5px 10px;border:1px solid #221A33;
+  margin-bottom:8px;word-break:break-all}
+.sim-log{background:#090D0E;border-radius:8px;padding:8px;font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;color:#6FD86A;min-height:72px;max-height:130px;overflow-y:auto;border:1px solid #142014}
 .sim-log::-webkit-scrollbar{width:3px}
 .sim-log::-webkit-scrollbar-thumb{background:#1A3018;border-radius:2px}
 .ll{line-height:1.75}
 .lts{color:#1E3A1E;margin-right:5px}
 .lerr{color:#FF6B6B}
-
 .hidden{display:none!important}
 </style>
 </head>
 <body>
-<div id="app">
-  <header id="header">
-    <div class="logo">
-      <div class="logo-icon">🤖</div>
-      <span>WeDo 2.0 <span style="color:var(--muted);font-weight:600">Simulator</span></span>
-    </div>
-    <span id="run-ind" class="hidden">
-      <div style="display:flex;align-items:center;gap:6px;padding:4px 11px;background:rgba(46,160,67,.2);border:1px solid #2EA043;border-radius:20px;font-size:11px;font-weight:800;color:#3FB950">
-        <div class="run-dot"></div>Running
-      </div>
-    </span>
-    <div class="sep"></div>
-    <button class="btn btn-clear" id="btn-clear">🗑 Clear</button>
-    <button class="btn btn-stop hidden" id="btn-stop">⏹ Stop</button>
-    <button class="btn btn-run" id="btn-run">▶ Run</button>
-  </header>
-  <div id="main">
-    <aside id="palette"></aside>
-    <div id="canvas-wrap">
-      <div id="canvas">
-        <div id="hint">
-          <div class="hi">🤖</div>
-          <div class="ht">Drag blocks from the left<br>to program your robot</div>
-        </div>
-      </div>
-    </div>
-    <aside id="simulator"></aside>
+<header id="header">
+  <button class="back-btn" onclick="goBack()">← Конструктор</button>
+  <input class="proj-name" id="proj-name" value="Загрузка..."
+    onblur="saveProjectName()" onkeydown="if(event.key==='Enter')this.blur()">
+  <div id="run-ind" class="hidden">
+    <div class="run-dot"></div>Выполняется
   </div>
+  <div class="sep"></div>
+  <span class="status-pill" id="status">● сохранено</span>
+  <button class="btn btn-save" onclick="saveProject()">💾 Сохранить</button>
+  <button class="btn btn-clear" id="btn-clear">🗑 Очистить</button>
+  <button class="btn btn-stop hidden" id="btn-stop">⏹ Стоп</button>
+  <button class="btn btn-run" id="btn-run">▶ Запустить</button>
+</header>
+<div id="main">
+  <aside id="palette"></aside>
+  <div id="canvas-wrap">
+    <div id="canvas">
+      <div id="hint">
+        <div class="hi">🤖</div>
+        <div class="ht">Перетащи блоки слева<br>чтобы запрограммировать робота</div>
+      </div>
+    </div>
+  </div>
+  <aside id="simulator"></aside>
 </div>
 <div id="ghost" class="hidden"></div>
+<div class="toast" id="toast"></div>
 
 <script>
+// ── PID + BroadcastChannel ──────────────────────
+const PID = new URLSearchParams(location.search).get('id');
+if(!PID) location.href = '/static/index.html';
+let bc = null;
+try{ bc = new BroadcastChannel('wedo_motor'); }catch(e){}
+
 // ══════════════════════════════════════════════
 //  BLOCK DEFINITIONS
 // ══════════════════════════════════════════════
 const BD = {
-  start:          {sh:'hat',cat:'flow',  icon:'🟢',lbl:'Start',             col:'#FF9200',fields:[]},
-  start_key:      {sh:'hat',cat:'flow',  icon:'⌨️', lbl:'When key',          col:'#FF8500',
+  start:         {sh:'hat',cat:'flow',  icon:'🟢',lbl:'Start',           col:'#FF9200',fields:[]},
+  start_key:     {sh:'hat',cat:'flow',  icon:'⌨️', lbl:'When key',        col:'#FF8500',
     fields:[{n:'key',t:'sel',opts:['SPACE','A','B','C','1','2','3'],def:'SPACE'}]},
-  wait:           {sh:'cmd',cat:'flow',  icon:'⏱', lbl:'Wait',              col:'#FF9200',
+  wait:          {sh:'cmd',cat:'flow',  icon:'⏱', lbl:'Wait',            col:'#FF9200',
     fields:[{n:'secs',t:'num',def:1,min:.1,max:60,step:.1,unit:'sec'}]},
-  repeat:         {sh:'cbl',cat:'flow',  icon:'🔄',lbl:'Repeat',            col:'#FF8500',
+  repeat:        {sh:'cbl',cat:'flow',  icon:'🔄',lbl:'Repeat',          col:'#FF8500',
     fields:[{n:'times',t:'num',def:3,min:1,max:9999,unit:'×'}]},
-  repeat_forever: {sh:'cbl',cat:'flow',  icon:'♾', lbl:'Forever',           col:'#FF8500',fields:[]},
-  stop_all:       {sh:'cmd',cat:'flow',  icon:'⏹', lbl:'Stop All',          col:'#E63946',fields:[]},
-
-  motor_on:       {sh:'cmd',cat:'output',icon:'⚙️', lbl:'Motor On',          col:'#00A8CC',
+  repeat_forever:{sh:'cbl',cat:'flow',  icon:'♾', lbl:'Forever',         col:'#FF8500',fields:[]},
+  stop_all:      {sh:'cmd',cat:'flow',  icon:'⏹', lbl:'Stop All',        col:'#E63946',fields:[]},
+  motor_on:      {sh:'cmd',cat:'output',icon:'⚙️', lbl:'Motor On',        col:'#00A8CC',
     fields:[{n:'power',t:'num',def:5,min:1,max:10,unit:''}]},
-  motor_on_time:  {sh:'cmd',cat:'output',icon:'⚙️', lbl:'Motor for',         col:'#00A8CC',
+  motor_on_time: {sh:'cmd',cat:'output',icon:'⚙️', lbl:'Motor for',       col:'#00A8CC',
     fields:[{n:'secs',t:'num',def:1,min:.1,max:60,step:.1,unit:'s'},{n:'power',t:'num',def:5,min:1,max:10,unit:''}]},
-  motor_stop:     {sh:'cmd',cat:'output',icon:'🛑',lbl:'Motor Stop',         col:'#00A8CC',fields:[]},
-  motor_dir:      {sh:'cmd',cat:'output',icon:'↩️', lbl:'Motor Direction',   col:'#009AB8',
+  motor_stop:    {sh:'cmd',cat:'output',icon:'🛑',lbl:'Motor Stop',       col:'#00A8CC',fields:[]},
+  motor_dir:     {sh:'cmd',cat:'output',icon:'↩️', lbl:'Motor Dir',       col:'#009AB8',
     fields:[{n:'dir',t:'sel',opts:['Forward','Reverse'],def:'Forward'}]},
-
-  set_light:      {sh:'cmd',cat:'display',icon:'💡',lbl:'Set Light',         col:'#A030DD',
+  set_light:     {sh:'cmd',cat:'display',icon:'💡',lbl:'Set Light',       col:'#A030DD',
     fields:[{n:'color',t:'col',def:'#00FF88'}]},
-  display_val:    {sh:'cmd',cat:'display',icon:'📊',lbl:'Display',           col:'#A030DD',
+  display_val:   {sh:'cmd',cat:'display',icon:'📊',lbl:'Display',         col:'#A030DD',
     fields:[{n:'val',t:'num',def:42,min:-999,max:999,unit:''}]},
-  display_text:   {sh:'cmd',cat:'display',icon:'📝',lbl:'Display Text',      col:'#A030DD',
+  display_text:  {sh:'cmd',cat:'display',icon:'📝',lbl:'Display Text',    col:'#A030DD',
     fields:[{n:'text',t:'txt',def:'Hello!'}]},
-  light_off:      {sh:'cmd',cat:'display',icon:'🌑',lbl:'Light Off',         col:'#A030DD',fields:[]},
-
-  play_sound:     {sh:'cmd',cat:'sound', icon:'🔊',lbl:'Play Sound',         col:'#CC2233',
+  light_off:     {sh:'cmd',cat:'display',icon:'🌑',lbl:'Light Off',       col:'#A030DD',fields:[]},
+  play_sound:    {sh:'cmd',cat:'sound', icon:'🔊',lbl:'Play Sound',       col:'#CC2233',
     fields:[{n:'snd',t:'sel',opts:['Beep','Buzz','Spin','Click','Alert','Fanfare'],def:'Beep'}]},
 };
-
 const CATS = [
-  {id:'flow',   lbl:'Flow',   col:'#FF9200', blocks:['start','start_key','wait','repeat','repeat_forever','stop_all']},
-  {id:'output', lbl:'Output', col:'#00A8CC', blocks:['motor_on','motor_on_time','motor_stop','motor_dir']},
-  {id:'display',lbl:'Display',col:'#A030DD', blocks:['set_light','light_off','display_val','display_text']},
-  {id:'sound',  lbl:'Sound',  col:'#CC2233', blocks:['play_sound']},
+  {id:'flow',   lbl:'Управление',col:'#FF9200',blocks:['start','start_key','wait','repeat','repeat_forever','stop_all']},
+  {id:'output', lbl:'Моторы',    col:'#00A8CC',blocks:['motor_on','motor_on_time','motor_stop','motor_dir']},
+  {id:'display',lbl:'Дисплей',   col:'#A030DD',blocks:['set_light','light_off','display_val','display_text']},
+  {id:'sound',  lbl:'Звук',      col:'#CC2233',blocks:['play_sound']},
 ];
 
 // ══════════════════════════════════════════════
@@ -303,10 +270,8 @@ const CATS = [
 let blocks = {};
 let idN = 0;
 function mkId(){ return 'b'+(++idN); }
-
-let drag = null;  // {id, fromPal, palType, offX, offY, origX, origY}
+let drag = null;
 let vm = {running:false, stop:false};
-
 const sim = {
   motorOn:false, motorPower:0, motorDir:1,
   ledOn:false, ledColor:'#1A1A1A',
@@ -317,46 +282,22 @@ const sim = {
 //  BLOCK HELPERS
 // ══════════════════════════════════════════════
 function getB(id){ return blocks[id]; }
-function isDef(t){ return !!BD[t]; }
 function isCbl(b){ return BD[b.type]?.sh==='cbl'; }
 function isHat(b){ return BD[b.type]?.sh==='hat'; }
 
 function mkBlock(type,x,y){
-  const def = BD[type]; if(!def) return null;
-  const id = mkId();
-  const vals = {};
+  const def=BD[type]; if(!def) return null;
+  const id=mkId(), vals={};
   (def.fields||[]).forEach(f=>{ vals[f.n]=f.def; });
   blocks[id]={id,type,x,y,vals,nextId:null,bodyId:null};
   return id;
 }
-
-function unlinkBlock(id){
-  const b=getB(id); if(!b) return;
-  Object.values(blocks).forEach(o=>{
-    if(o.nextId===id){ o.nextId=b.nextId||null; }  // re-wire
-    if(o.bodyId===id){ o.bodyId=null; }
-  });
-  b.nextId=null;
-}
-
 function unlinkBlockClean(id){
-  // Just detach this block from its parent, keep nextId intact
   Object.values(blocks).forEach(o=>{
     if(o.nextId===id) o.nextId=null;
     if(o.bodyId===id) o.bodyId=null;
   });
 }
-
-function deleteBlockTree(id){
-  const b=getB(id); if(!b) return;
-  unlinkBlock(id);
-  const nextId = b.nextId;
-  const bodyId = b.bodyId;
-  delete blocks[id];
-  if(bodyId) deleteBlockTree(bodyId);
-  // Don't delete next chain - it's been rewired
-}
-
 function deleteChainFrom(id){
   if(!id) return;
   const b=getB(id); if(!b) return;
@@ -365,19 +306,6 @@ function deleteChainFrom(id){
   if(body) deleteChainFrom(body);
   if(next) deleteChainFrom(next);
 }
-
-function chainRoot(id){
-  let visited=new Set(), cur=id;
-  while(true){
-    if(visited.has(cur)) return cur;
-    visited.add(cur);
-    const par = Object.values(blocks).find(b=>b.nextId===cur||b.bodyId===cur);
-    if(!par) return cur;
-    cur=par.id;
-  }
-}
-
-// Get ordered chain array following nextId
 function getChain(id){
   const chain=[]; let cur=id;
   while(cur){ chain.push(cur); cur=getB(cur)?.nextId; }
@@ -398,8 +326,7 @@ function renderPalette(){
     cat.blocks.forEach(type=>{
       const def=BD[type]; if(!def) return;
       const el=document.createElement('div');
-      el.className='pb';
-      el.dataset.type=type;
+      el.className='pb'; el.dataset.type=type;
       el.style.cssText=`background:${hexAlpha(def.col,.18)};color:${def.col};border-left-color:${def.col}`;
       el.innerHTML=`<span class="pb-icon">${def.icon}</span><span>${def.lbl}</span>`;
       el.addEventListener('mousedown',e=>startPalDrag(e,type));
@@ -414,160 +341,78 @@ function renderPalette(){
 // ══════════════════════════════════════════════
 function makeBEl(b){
   const def=BD[b.type]; if(!def) return null;
-  const isC=isCbl(b), isH=isHat(b);
-  
-  if(isC){
-    return makeCBlockEl(b,def);
-  }
-  
+  if(isCbl(b)) return makeCBlockEl(b,def);
+  const isH=isHat(b);
   const el=document.createElement('div');
   el.className='cb'+(isH?' hat':'');
   el.id=b.id;
   el.style.cssText=`left:${b.x}px;top:${b.y}px;background:${def.col};color:#fff;z-index:10`;
-
-  // Notch (not for hat)
-  if(!isH){
-    const notch=document.createElement('div');
-    notch.className='bnotch';
-    el.appendChild(notch);
-  }
-
-  // Icon
+  if(!isH){ const n=document.createElement('div'); n.className='bnotch'; el.appendChild(n); }
   const ic=document.createElement('span');
-  ic.style.cssText='font-size:13px;flex-shrink:0';
-  ic.textContent=def.icon;
-  el.appendChild(ic);
-
-  // Label parts + fields
+  ic.style.cssText='font-size:13px;flex-shrink:0'; ic.textContent=def.icon; el.appendChild(ic);
   buildBlockContent(el,b,def);
-
-  // Delete btn
-  const del=document.createElement('button');
-  del.className='del-btn';
-  del.textContent='×';
-  del.addEventListener('mousedown',e=>{e.stopPropagation();deleteChainFrom(b.id);renderCanvas();});
+  const del=document.createElement('button'); del.className='del-btn'; del.textContent='×';
+  del.addEventListener('mousedown',e=>{e.stopPropagation();deleteChainFrom(b.id);renderCanvas();markDirty();});
   el.appendChild(del);
-
-  // Tab
-  const tab=document.createElement('div');
-  tab.className='btab';
-  tab.style.background=darken(def.col,.25);
-  el.appendChild(tab);
-
+  const tab=document.createElement('div'); tab.className='btab'; tab.style.background=darken(def.col,.25); el.appendChild(tab);
   el.addEventListener('mousedown',e=>startCanvasDrag(e,b.id));
   return el;
 }
 
 function makeCBlockEl(b,def){
   const wrap=document.createElement('div');
-  wrap.className='cbl-wrap';
-  wrap.id=b.id;
+  wrap.className='cbl-wrap'; wrap.id=b.id;
   wrap.style.cssText=`left:${b.x}px;top:${b.y}px;z-index:10`;
-
-  // Head
   const head=document.createElement('div');
   head.className='cbl-head'+(isHat(b)?' hat':'');
   head.style.cssText=`background:${def.col};color:#fff`;
-
-  const ic=document.createElement('span');
-  ic.style.cssText='font-size:13px;flex-shrink:0';
-  ic.textContent=def.icon;
-  head.appendChild(ic);
+  const ic=document.createElement('span'); ic.style.cssText='font-size:13px;flex-shrink:0'; ic.textContent=def.icon; head.appendChild(ic);
   buildBlockContent(head,b,def);
-
-  const del=document.createElement('button');
-  del.className='del-btn';
-  del.textContent='×';
-  del.addEventListener('mousedown',e=>{e.stopPropagation();deleteChainFrom(b.id);renderCanvas();});
+  const del=document.createElement('button'); del.className='del-btn'; del.textContent='×';
+  del.addEventListener('mousedown',e=>{e.stopPropagation();deleteChainFrom(b.id);renderCanvas();markDirty();});
   head.appendChild(del);
   head.addEventListener('mousedown',e=>startCanvasDrag(e,b.id));
   wrap.appendChild(head);
-
-  // Arm
-  const arm=document.createElement('div');
-  arm.className='cbl-arm';
-
-  const side=document.createElement('div');
-  side.className='cbl-side';
-  side.style.background=def.col;
-
-  const inner=document.createElement('div');
-  inner.className='cbl-inner';
-  inner.dataset.bodyOf=b.id;
-  // Body blocks rendered separately (absolute), this is just visual slot
-  if(!b.bodyId){
-    const hint=document.createElement('div');
-    hint.className='inner-hint';
-    hint.textContent='Drop blocks here';
-    inner.appendChild(hint);
-  }
-  arm.appendChild(side);
-  arm.appendChild(inner);
-  wrap.appendChild(arm);
-
-  // Cap
-  const cap=document.createElement('div');
-  cap.className='cbl-cap';
-  cap.style.background=def.col;
-  wrap.appendChild(cap);
-
+  const arm=document.createElement('div'); arm.className='cbl-arm';
+  const side=document.createElement('div'); side.className='cbl-side'; side.style.background=def.col;
+  const inner=document.createElement('div'); inner.className='cbl-inner'; inner.dataset.bodyOf=b.id;
+  if(!b.bodyId){ const h=document.createElement('div'); h.className='inner-hint'; h.textContent='Drop here'; inner.appendChild(h); }
+  arm.appendChild(side); arm.appendChild(inner); wrap.appendChild(arm);
+  const cap=document.createElement('div'); cap.className='cbl-cap'; cap.style.background=def.col; wrap.appendChild(cap);
   return wrap;
 }
 
 function buildBlockContent(container,b,def){
-  // Build inline content: label parts with fields interspersed
-  const lbl=def.lbl;
-  
-  // For blocks with fields, show label then fields
   const span=document.createElement('span');
   span.style.cssText='font-size:12.5px;pointer-events:none';
-  span.textContent=lbl;
-  container.appendChild(span);
-
+  span.textContent=def.lbl; container.appendChild(span);
   (def.fields||[]).forEach(f=>{
     let inp;
     if(f.t==='num'){
-      inp=document.createElement('input');
-      inp.type='number';
+      inp=document.createElement('input'); inp.type='number';
       inp.className='bi-num'+(f.step?.toString().includes('.')?' wide':'');
-      inp.value=b.vals[f.n];
-      inp.min=f.min; inp.max=f.max;
+      inp.value=b.vals[f.n]; inp.min=f.min; inp.max=f.max;
       if(f.step) inp.step=f.step;
       inp.addEventListener('mousedown',e=>e.stopPropagation());
-      inp.addEventListener('change',()=>{ b.vals[f.n]=parseFloat(inp.value)||0; });
+      inp.addEventListener('change',()=>{ b.vals[f.n]=parseFloat(inp.value)||0; markDirty(); });
       if(f.unit){
         container.appendChild(inp);
-        const u=document.createElement('span');
-        u.style.cssText='font-size:11px;opacity:.75;pointer-events:none';
-        u.textContent=' '+f.unit;
-        container.appendChild(u);
-        return;
+        const u=document.createElement('span'); u.style.cssText='font-size:11px;opacity:.75;pointer-events:none';
+        u.textContent=' '+f.unit; container.appendChild(u); return;
       }
     } else if(f.t==='sel'){
-      inp=document.createElement('select');
-      inp.className='bi-sel';
-      f.opts.forEach(o=>{
-        const opt=document.createElement('option');
-        opt.value=o; opt.textContent=o;
-        if(o===b.vals[f.n]) opt.selected=true;
-        inp.appendChild(opt);
-      });
+      inp=document.createElement('select'); inp.className='bi-sel';
+      f.opts.forEach(o=>{ const opt=document.createElement('option'); opt.value=o; opt.textContent=o; if(o===b.vals[f.n]) opt.selected=true; inp.appendChild(opt); });
       inp.addEventListener('mousedown',e=>e.stopPropagation());
-      inp.addEventListener('change',()=>{ b.vals[f.n]=inp.value; });
+      inp.addEventListener('change',()=>{ b.vals[f.n]=inp.value; markDirty(); });
     } else if(f.t==='col'){
-      inp=document.createElement('input');
-      inp.type='color';
-      inp.className='bi-color';
-      inp.value=b.vals[f.n];
+      inp=document.createElement('input'); inp.type='color'; inp.className='bi-color'; inp.value=b.vals[f.n];
       inp.addEventListener('mousedown',e=>e.stopPropagation());
-      inp.addEventListener('input',()=>{ b.vals[f.n]=inp.value; });
+      inp.addEventListener('input',()=>{ b.vals[f.n]=inp.value; markDirty(); });
     } else if(f.t==='txt'){
-      inp=document.createElement('input');
-      inp.type='text';
-      inp.className='bi-txt';
-      inp.value=b.vals[f.n];
+      inp=document.createElement('input'); inp.type='text'; inp.className='bi-txt'; inp.value=b.vals[f.n];
       inp.addEventListener('mousedown',e=>e.stopPropagation());
-      inp.addEventListener('change',()=>{ b.vals[f.n]=inp.value; });
+      inp.addEventListener('change',()=>{ b.vals[f.n]=inp.value; markDirty(); });
     }
     if(inp) container.appendChild(inp);
   });
@@ -578,65 +423,32 @@ function buildBlockContent(container,b,def){
 // ══════════════════════════════════════════════
 function renderCanvas(){
   const cv=document.getElementById('canvas');
-  // Remove all block elements
   cv.querySelectorAll('.cb,.cbl-wrap').forEach(e=>e.remove());
-  
-  // Show/hide hint
-  document.getElementById('hint').style.display=
-    Object.keys(blocks).length===0?'block':'none';
-
-  // Render all blocks
-  Object.values(blocks).forEach(b=>{
-    const el=makeBEl(b);
-    if(el) cv.appendChild(el);
-  });
-
-  // Layout chains (set Y positions for chained blocks)
-  // Find all roots (no parent)
-  const allIds=new Set(Object.keys(blocks));
-  const children=new Set();
-  Object.values(blocks).forEach(b=>{
-    if(b.nextId) children.add(b.nextId);
-    if(b.bodyId) children.add(b.bodyId);
-  });
-  const roots=[...allIds].filter(id=>!children.has(id));
-  roots.forEach(id=>layoutFrom(id));
+  document.getElementById('hint').style.display=Object.keys(blocks).length===0?'block':'none';
+  Object.values(blocks).forEach(b=>{ const el=makeBEl(b); if(el) cv.appendChild(el); });
+  const allIds=new Set(Object.keys(blocks)), children=new Set();
+  Object.values(blocks).forEach(b=>{ if(b.nextId) children.add(b.nextId); if(b.bodyId) children.add(b.bodyId); });
+  [...allIds].filter(id=>!children.has(id)).forEach(id=>layoutFrom(id));
 }
 
-function getElHeight(id){
-  const el=document.getElementById(id);
-  return el ? el.offsetHeight : 48;
-}
+function getElHeight(id){ const el=document.getElementById(id); return el?el.offsetHeight:48; }
 
 function layoutFrom(id,startX,startY){
   const b=getB(id); if(!b) return;
   if(startX!=null){ b.x=startX; b.y=startY; }
   const el=document.getElementById(id);
   if(el){ el.style.left=b.x+'px'; el.style.top=b.y+'px'; }
-
-  // If this block has a body chain, layout body blocks inside it
-  if(isCbl(b) && b.bodyId){
-    // Position body blocks at indent inside cblock
+  if(isCbl(b)&&b.bodyId){
     const innerEl=el?.querySelector('.cbl-inner');
     const headH=el?.querySelector('.cbl-head')?.offsetHeight||44;
     if(innerEl){
-      const armRect=innerEl.getBoundingClientRect();
-      const wrapRect=el.getBoundingClientRect();
-      const bodyX=b.x+24; // indented by cbl-side width
-      const bodyY=b.y+headH+2;
-      layoutChain(b.bodyId,bodyX,bodyY);
-      // Resize inner to fit body
+      layoutChain(b.bodyId,b.x+24,b.y+headH+2);
       const bodyH=getChainHeight(b.bodyId);
       innerEl.style.minHeight=Math.max(44,bodyH+8)+'px';
-      el.querySelector('.cbl-side').style.height=(bodyH+8)+'px';
+      const sideEl=el.querySelector('.cbl-side'); if(sideEl) sideEl.style.height=(bodyH+8)+'px';
     }
   }
-
-  // Layout next in chain
-  if(b.nextId){
-    const myH=getElHeight(id);
-    layoutFrom(b.nextId,b.x,b.y+myH+3);
-  }
+  if(b.nextId) layoutFrom(b.nextId,b.x,b.y+getElHeight(id)+3);
 }
 
 function layoutChain(startId,x,y){
@@ -646,17 +458,14 @@ function layoutChain(startId,x,y){
     b.x=x; b.y=curY;
     const el=document.getElementById(cur);
     if(el){ el.style.left=x+'px'; el.style.top=curY+'px'; }
-    if(isCbl(b) && b.bodyId){
+    if(isCbl(b)&&b.bodyId){
       const headH=el?.querySelector('.cbl-head')?.offsetHeight||44;
       layoutChain(b.bodyId,x+24,curY+headH+2);
       const bodyH=getChainHeight(b.bodyId);
-      const innerEl=el?.querySelector('.cbl-inner');
-      if(innerEl) innerEl.style.minHeight=Math.max(44,bodyH+8)+'px';
-      const sideEl=el?.querySelector('.cbl-side');
-      if(sideEl) sideEl.style.height=(bodyH+8)+'px';
+      const innerEl=el?.querySelector('.cbl-inner'); if(innerEl) innerEl.style.minHeight=Math.max(44,bodyH+8)+'px';
+      const sideEl=el?.querySelector('.cbl-side'); if(sideEl) sideEl.style.height=(bodyH+8)+'px';
     }
-    curY+=getElHeight(cur)+3;
-    cur=b.nextId;
+    curY+=getElHeight(cur)+3; cur=b.nextId;
   }
 }
 
@@ -665,7 +474,7 @@ function getChainHeight(startId){
   while(cur){
     h+=getElHeight(cur)+3;
     const b=getB(cur); if(!b) break;
-    if(isCbl(b) && b.bodyId) h+=getChainHeight(b.bodyId)+8;
+    if(isCbl(b)&&b.bodyId) h+=getChainHeight(b.bodyId)+8;
     cur=b.nextId;
   }
   return h;
@@ -675,120 +484,82 @@ function getChainHeight(startId){
 //  DRAG & DROP
 // ══════════════════════════════════════════════
 const ghost=document.getElementById('ghost');
-const canvasWrap=document.getElementById('canvas-wrap');
 const canvas=document.getElementById('canvas');
 
 function startPalDrag(e,type){
   e.preventDefault();
   const def=BD[type];
   ghost.className='';
-  ghost.style.cssText=`left:${e.clientX-70}px;top:${e.clientY-20}px;
-    background:${def.col};color:#fff;border-radius:10px;
-    padding:9px 14px;font-family:'Nunito',sans-serif;font-weight:700;
-    font-size:12.5px;white-space:nowrap;
-    box-shadow:0 8px 24px rgba(0,0,0,.6);
-    display:flex;align-items:center;gap:7px;
-    opacity:.85;transform:rotate(2deg) scale(1.04);
+  ghost.style.cssText=`left:${e.clientX-70}px;top:${e.clientY-20}px;background:${def.col};color:#fff;
+    border-radius:10px;padding:9px 14px;font-family:'Nunito',sans-serif;font-weight:700;
+    font-size:12.5px;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.6);
+    display:flex;align-items:center;gap:7px;opacity:.85;transform:rotate(2deg) scale(1.04);
     position:fixed;pointer-events:none;z-index:9999`;
   ghost.innerHTML=`<span>${def.icon}</span><span>${def.lbl}</span>`;
-  drag={fromPal:true,palType:type,
-    offX:e.clientX-70,offY:e.clientY-20};
+  drag={fromPal:true,palType:type,offX:e.clientX-70,offY:e.clientY-20};
 }
 
 function startCanvasDrag(e,id){
   if(e.target.closest('.bi-num,.bi-sel,.bi-color,.bi-txt,.del-btn')) return;
-  e.preventDefault();
-  e.stopPropagation();
+  e.preventDefault(); e.stopPropagation();
   const b=getB(id); if(!b) return;
   const el=document.getElementById(id);
   const rect=el.getBoundingClientRect();
-  // Detach from chain but keep own chain intact
   unlinkBlockClean(id);
-
-  drag={fromPal:false,id,
-    offX:e.clientX-rect.left,offY:e.clientY-rect.top,
-    origX:b.x,origY:b.y};
-  el.classList.add('drag');
-  // Bring to front
-  el.style.zIndex=1000;
+  drag={fromPal:false,id,offX:e.clientX-rect.left,offY:e.clientY-rect.top,origX:b.x,origY:b.y};
+  el.classList.add('drag'); el.style.zIndex=1000;
 }
 
 document.addEventListener('mousemove',e=>{
   if(!drag) return;
   if(drag.fromPal){
-    ghost.style.left=(e.clientX-70)+'px';
-    ghost.style.top=(e.clientY-20)+'px';
+    ghost.style.left=(e.clientX-70)+'px'; ghost.style.top=(e.clientY-20)+'px';
   } else {
     const cvRect=canvas.getBoundingClientRect();
-    const nx=e.clientX-cvRect.left-drag.offX;
-    const ny=e.clientY-cvRect.top-drag.offY;
+    const nx=e.clientX-cvRect.left-drag.offX, ny=e.clientY-cvRect.top-drag.offY;
     const b=getB(drag.id); if(!b) return;
     b.x=nx; b.y=ny;
     const el=document.getElementById(drag.id);
     if(el){ el.style.left=nx+'px'; el.style.top=ny+'px'; }
-    // Move chain
     moveChainWith(drag.id,nx,ny);
-    // Highlight snap target
     highlightSnap(drag.id);
   }
 });
 
 function moveChainWith(startId,rootX,rootY){
-  // Already set root pos. Now cascade nextId chain relative offsets
-  const b=getB(startId); if(!b) return;
-  if(b.nextId){
-    const nb=getB(b.nextId);
-    if(nb){
-      const myH=getElHeight(startId);
-      nb.x=rootX; nb.y=rootY+myH+3;
-      const nel=document.getElementById(b.nextId);
-      if(nel){ nel.style.left=nb.x+'px'; nel.style.top=nb.y+'px'; }
-      moveChainWith(b.nextId,nb.x,nb.y);
-    }
-  }
+  const b=getB(startId); if(!b||!b.nextId) return;
+  const nb=getB(b.nextId); if(!nb) return;
+  nb.x=rootX; nb.y=rootY+getElHeight(startId)+3;
+  const nel=document.getElementById(b.nextId);
+  if(nel){ nel.style.left=nb.x+'px'; nel.style.top=nb.y+'px'; }
+  moveChainWith(b.nextId,nb.x,nb.y);
 }
 
 function highlightSnap(id){
   document.querySelectorAll('.snap-hl').forEach(e=>e.classList.remove('snap-hl'));
-  const snap=findSnap(id);
-  if(snap){
-    const el=document.getElementById(snap.targetId);
-    if(el) el.classList.add('snap-hl');
-  }
+  const snap=findSnap(id); if(!snap) return;
+  const el=document.getElementById(snap.targetId); if(el) el.classList.add('snap-hl');
 }
 
 const SNAP_D=38;
 function findSnap(dragId){
-  const db=getB(dragId); if(!db) return null;
-  const del=document.getElementById(dragId);
-  if(!del) return null;
+  const del=document.getElementById(dragId); if(!del) return null;
   const dr=del.getBoundingClientRect();
-
   for(const tb of Object.values(blocks)){
     if(tb.id===dragId) continue;
-    const tel=document.getElementById(tb.id);
-    if(!tel) continue;
-
-    // Snap to bottom of target (next connection)
+    const tel=document.getElementById(tb.id); if(!tel) continue;
     if(!tb.nextId){
       const tr=tel.getBoundingClientRect();
       const headEl=tel.querySelector('.cbl-head')||tel;
       const headR=headEl.getBoundingClientRect();
-      const dy=Math.abs(dr.top-(headR.bottom));
-      const dx=Math.abs(dr.left-tr.left);
-      if(dy<SNAP_D && dx<SNAP_D+20) return {targetId:tb.id,zone:'next'};
+      if(Math.abs(dr.top-headR.bottom)<SNAP_D && Math.abs(dr.left-tr.left)<SNAP_D+20)
+        return {targetId:tb.id,zone:'next'};
     }
-
-    // Snap into C-block body
-    if(isCbl(tb) && !tb.bodyId){
-      const innerEl=tel.querySelector('.cbl-inner');
-      if(innerEl){
-        const ir=innerEl.getBoundingClientRect();
-        if(dr.left>ir.left-20 && dr.left<ir.right+20 &&
-           dr.top>ir.top-10 && dr.top<ir.bottom+10){
-          return {targetId:tb.id,zone:'body'};
-        }
-      }
+    if(isCbl(tb)&&!tb.bodyId){
+      const innerEl=tel.querySelector('.cbl-inner'); if(!innerEl) continue;
+      const ir=innerEl.getBoundingClientRect();
+      if(dr.left>ir.left-20&&dr.left<ir.right+20&&dr.top>ir.top-10&&dr.top<ir.bottom+10)
+        return {targetId:tb.id,zone:'body'};
     }
   }
   return null;
@@ -799,52 +570,27 @@ document.addEventListener('mouseup',e=>{
   if(drag.fromPal){
     ghost.style.display='none';
     const cvRect=canvas.getBoundingClientRect();
-    if(e.clientX>=cvRect.left && e.clientX<=cvRect.right &&
-       e.clientY>=cvRect.top && e.clientY<=cvRect.bottom){
-      const x=e.clientX-cvRect.left-70;
-      const y=e.clientY-cvRect.top-20;
+    if(e.clientX>=cvRect.left&&e.clientX<=cvRect.right&&e.clientY>=cvRect.top&&e.clientY<=cvRect.bottom){
+      const x=e.clientX-cvRect.left-70, y=e.clientY-cvRect.top-20;
       const id=mkBlock(drag.palType,Math.max(10,x),Math.max(10,y));
-      renderCanvas();
-      setTimeout(()=>{
-        const snap=findSnap(id);
-        if(snap) doSnap(id,snap);
-        renderCanvas();
-      },30);
+      renderCanvas(); markDirty();
+      setTimeout(()=>{ const snap=findSnap(id); if(snap){doSnap(id,snap);markDirty();} renderCanvas(); },30);
     }
   } else {
     document.querySelectorAll('.snap-hl').forEach(el=>el.classList.remove('snap-hl'));
-    const el=document.getElementById(drag.id);
-    if(el) el.classList.remove('drag');
-    const snap=findSnap(drag.id);
-    if(snap) doSnap(drag.id,snap);
-    renderCanvas();
+    const el=document.getElementById(drag.id); if(el) el.classList.remove('drag');
+    const snap=findSnap(drag.id); if(snap) doSnap(drag.id,snap);
+    renderCanvas(); markDirty();
   }
   drag=null;
 });
 
 function doSnap(dragId,snap){
   const tb=getB(snap.targetId); if(!tb) return;
-  const db=getB(dragId); if(!db) return;
   if(snap.zone==='next'){
-    // Connect dragId after targetId
-    const oldNext=tb.nextId;
-    tb.nextId=dragId;
-    // If dragged chain ends, attach old next to its end
-    if(oldNext){
-      const chainEnd=getChainEnd(dragId);
-      if(chainEnd && chainEnd!==oldNext){
-        getB(chainEnd).nextId=oldNext;
-      }
-    }
-  } else if(snap.zone==='body'){
-    tb.bodyId=dragId;
-  }
-}
-
-function getChainEnd(id){
-  let cur=id;
-  while(getB(cur)?.nextId) cur=getB(cur).nextId;
-  return cur;
+    const oldNext=tb.nextId; tb.nextId=dragId;
+    if(oldNext){ let cur=dragId; while(getB(cur)?.nextId) cur=getB(cur).nextId; if(cur!==oldNext) getB(cur).nextId=oldNext; }
+  } else if(snap.zone==='body'){ tb.bodyId=dragId; }
 }
 
 // ══════════════════════════════════════════════
@@ -854,127 +600,84 @@ function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
 async function runProgram(){
   if(vm.running) return;
-  vm.running=true; vm.stop=false;
-  updateRunUI(true);
-  simLog('▶ Program started');
-
-  const hats=Object.values(blocks).filter(b=>BD[b.type]?.sh==='hat' && b.type==='start');
-  
-  try{
-    await Promise.all(hats.map(h=>h.nextId?runChain(h.nextId):Promise.resolve()));
-  }catch(ex){
-    if(ex.message!=='STOPPED') console.error(ex);
-  }
-
-  vm.running=false; vm.stop=false;
-  updateRunUI(false);
-  simLog('⏹ Done');
-  updateSimUI();
+  vm.running=true; vm.stop=false; updateRunUI(true);
+  simLog('▶ Программа запущена');
+  const hats=Object.values(blocks).filter(b=>BD[b.type]?.sh==='hat'&&b.type==='start');
+  try{ await Promise.all(hats.map(h=>h.nextId?runChain(h.nextId):Promise.resolve())); }
+  catch(ex){ if(ex.message!=='STOPPED') console.error(ex); }
+  vm.running=false; vm.stop=false; updateRunUI(false);
+  simLog('⏹ Готово'); updateSimUI();
 }
 
 async function runChain(startId){
   let cur=startId;
-  while(cur && !vm.stop){
-    await runBlock(cur);
-    cur=getB(cur)?.nextId;
-  }
+  while(cur&&!vm.stop){ await runBlock(cur); cur=getB(cur)?.nextId; }
 }
 
 async function runBlock(id){
   if(vm.stop) throw new Error('STOPPED');
   const b=getB(id); if(!b) return;
-  
-  // Flash block
   const el=document.getElementById(id);
   if(el){ el.classList.add('exec'); setTimeout(()=>el.classList.remove('exec'),280); }
-
   const v=b.vals;
   switch(b.type){
     case 'wait':
-      await sleep((parseFloat(v.secs)||1)*1000);
-      break;
+      await sleep((parseFloat(v.secs)||1)*1000); break;
     case 'stop_all':
       vm.stop=true; throw new Error('STOPPED');
     case 'motor_on':
       sim.motorOn=true; sim.motorPower=parseInt(v.power)||5;
-      simLog(`⚙️ Motor ON — power ${sim.motorPower}`);
+      simLog(`⚙️ Мотор ВКЛ — мощность ${sim.motorPower}`);
+      bc?.postMessage({type:'motor_on',power:sim.motorPower});
       updateSimUI(); break;
     case 'motor_on_time':
       sim.motorOn=true; sim.motorPower=parseInt(v.power)||5;
-      simLog(`⚙️ Motor ON — ${v.secs}s @ power ${sim.motorPower}`);
+      simLog(`⚙️ Мотор ВКЛ — ${v.secs}с @ мощность ${sim.motorPower}`);
+      bc?.postMessage({type:'motor_on',power:sim.motorPower});
       updateSimUI();
       await sleep((parseFloat(v.secs)||1)*1000);
-      if(!vm.stop){ sim.motorOn=false; updateSimUI(); }
+      if(!vm.stop){ sim.motorOn=false; bc?.postMessage({type:'motor_off'}); updateSimUI(); }
       break;
     case 'motor_stop':
-      sim.motorOn=false;
-      simLog('🛑 Motor STOP');
-      updateSimUI(); break;
+      sim.motorOn=false; simLog('🛑 Мотор СТОП');
+      bc?.postMessage({type:'motor_off'}); updateSimUI(); break;
     case 'motor_dir':
       sim.motorDir=v.dir==='Reverse'?-1:1;
-      simLog(`↩️ Motor direction: ${v.dir}`);
-      updateSimUI(); break;
+      simLog(`↩️ Направление: ${v.dir}`); updateSimUI(); break;
     case 'set_light':
-      sim.ledOn=true; sim.ledColor=v.color;
-      simLog(`💡 LED → ${v.color}`);
-      updateSimUI(); break;
+      sim.ledOn=true; sim.ledColor=v.color; simLog(`💡 Свет → ${v.color}`); updateSimUI(); break;
     case 'light_off':
-      sim.ledOn=false; sim.ledColor='#1A1A1A';
-      simLog('🌑 LED off');
-      updateSimUI(); break;
+      sim.ledOn=false; sim.ledColor='#1A1A1A'; simLog('🌑 Свет выкл'); updateSimUI(); break;
     case 'display_val':
-      sim.display=String(v.val??'');
-      simLog(`📊 Display: ${sim.display}`);
-      updateSimUI(); break;
+      sim.display=String(v.val??''); simLog(`📊 Дисплей: ${sim.display}`); updateSimUI(); break;
     case 'display_text':
-      sim.display=String(v.text||'');
-      simLog(`📝 Display: "${sim.display}"`);
-      updateSimUI(); break;
+      sim.display=String(v.text||''); simLog(`📝 Дисплей: "${sim.display}"`); updateSimUI(); break;
     case 'play_sound':
-      simLog(`🔊 Sound: ${v.snd}`);
-      playSound(v.snd);
-      await sleep(400); break;
+      simLog(`🔊 Звук: ${v.snd}`); playSound(v.snd); await sleep(400); break;
     case 'repeat':{
       const n=parseInt(v.times)||1;
-      for(let i=0;i<n&&!vm.stop;i++){
-        if(b.bodyId) await runChain(b.bodyId);
-        await sleep(5);
-      }
+      for(let i=0;i<n&&!vm.stop;i++){ if(b.bodyId) await runChain(b.bodyId); await sleep(5); }
       break;}
     case 'repeat_forever':
-      while(!vm.stop){
-        if(b.bodyId) await runChain(b.bodyId);
-        await sleep(10);
-      }
-      break;
+      while(!vm.stop){ if(b.bodyId) await runChain(b.bodyId); await sleep(10); } break;
   }
 }
 
 // ══════════════════════════════════════════════
-//  SOUND (Web Audio)
+//  SOUND
 // ══════════════════════════════════════════════
 let audioCtx=null;
 function getAudio(){ if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
-
 function playSound(name){
   try{
-    const ctx=getAudio();
-    const o=ctx.createOscillator();
-    const g=ctx.createGain();
+    const ctx=getAudio(), o=ctx.createOscillator(), g=ctx.createGain();
     o.connect(g); g.connect(ctx.destination);
     const now=ctx.currentTime;
-    const sounds={
-      Beep:  [880,.15,'sine'],
-      Buzz:  [120,.2,'sawtooth'],
-      Spin:  [440,.3,'square'],
-      Click: [1200,.05,'square'],
-      Alert: [660,.25,'triangle'],
-      Fanfare:[523,.4,'sine'],
-    };
-    const [freq,dur,wave]=sounds[name]||sounds.Beep;
+    const S={Beep:[880,.15,'sine'],Buzz:[120,.2,'sawtooth'],Spin:[440,.3,'square'],
+              Click:[1200,.05,'square'],Alert:[660,.25,'triangle'],Fanfare:[523,.4,'sine']};
+    const [freq,dur,wave]=S[name]||S.Beep;
     o.type=wave; o.frequency.value=freq;
-    g.gain.setValueAtTime(.35,now);
-    g.gain.exponentialRampToValueAtTime(.001,now+dur);
+    g.gain.setValueAtTime(.35,now); g.gain.exponentialRampToValueAtTime(.001,now+dur);
     o.start(now); o.stop(now+dur);
   }catch(ex){}
 }
@@ -996,147 +699,93 @@ function renderSimulator(){
       </div>
       <div class="hub-lbl">WeDo 2.0 SmartHub</div>
       <div class="hub-row">
-        <div class="light-ring" id="lring">
-          <div class="light-core" id="lcore"></div>
-        </div>
-        <div>
-          <div class="led-lbl">LED Light</div>
-          <div class="led-hex" id="led-hex">#1A1A1A</div>
-        </div>
+        <div class="light-ring" id="lring"><div class="light-core" id="lcore"></div></div>
+        <div><div class="led-lbl">LED</div><div class="led-hex" id="led-hex">#1A1A1A</div></div>
       </div>
     </div>
-
     <div class="motor-box">
-      <div class="sim-ttl" style="margin-bottom:4px">Motor · Port 1</div>
+      <div class="sim-ttl" style="margin-bottom:4px">Мотор · Порт 1</div>
       <div class="mrow">
         <div class="mwheel" id="mwheel">
-          <div class="mspoke" id="mspoke"></div>
-          <div class="mspoke2" id="mspoke2"></div>
-          <div class="mctr"></div>
+          <div class="mspoke"></div><div class="mspoke2"></div><div class="mctr"></div>
         </div>
         <div class="minfo">
-          <div class="mstatus" id="mstatus">Stopped</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px">Power: <span id="mpow">0</span>/10</div>
+          <div class="mstatus" id="mstatus">Остановлен</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Мощность: <span id="mpow">0</span>/10</div>
           <div class="mpbar"><div class="mpfill" id="mpfill"></div></div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="sim-sec">
-    <div class="sim-ttl">Sensors</div>
+    <div class="sim-ttl">Датчики</div>
     <div class="srow">
       <div class="sbox">
-        <div class="sname">Distance</div>
+        <div class="sname">Дистанция</div>
         <div class="sval" id="sdist">5</div>
         <input class="dist-sl" id="dist-sl" type="range" min="0" max="10" step="1" value="5">
       </div>
       <div class="sbox">
-        <div class="sname">Tilt</div>
-        <div class="sval" id="stilt" style="font-size:13px;margin-top:5px">None</div>
-        <div class="tilt-grid" id="tilt-grid">
-          <div></div>
-          <div class="tbtn" data-tilt="up"   title="Tilt Up">⬆️</div>
-          <div></div>
-          <div class="tbtn" data-tilt="left"  title="Tilt Left">⬅️</div>
-          <div class="tbtn" data-tilt="none"  title="No Tilt">⚫</div>
-          <div class="tbtn" data-tilt="right" title="Tilt Right">➡️</div>
-          <div></div>
-          <div class="tbtn" data-tilt="down"  title="Tilt Down">⬇️</div>
-          <div></div>
+        <div class="sname">Наклон</div>
+        <div class="sval" id="stilt" style="font-size:13px;margin-top:5px">—</div>
+        <div class="tilt-grid">
+          <div></div><div class="tbtn" data-tilt="up">⬆️</div><div></div>
+          <div class="tbtn" data-tilt="left">⬅️</div><div class="tbtn" data-tilt="none">⚫</div><div class="tbtn" data-tilt="right">➡️</div>
+          <div></div><div class="tbtn" data-tilt="down">⬇️</div><div></div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="sim-sec">
-    <div class="sim-ttl">Display Output</div>
+    <div class="sim-ttl">Вывод на дисплей</div>
     <div class="disp-out" id="disp-out">—</div>
     <div class="sim-log" id="sim-log"></div>
   </div>`;
-
-  // Tilt buttons
   s.querySelectorAll('.tbtn').forEach(btn=>{
     btn.addEventListener('click',()=>{
       sim.tilt=btn.dataset.tilt;
       s.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('stilt').textContent=
-        sim.tilt==='none'?'None':sim.tilt.charAt(0).toUpperCase()+sim.tilt.slice(1);
+      document.getElementById('stilt').textContent=sim.tilt==='none'?'—':sim.tilt.charAt(0).toUpperCase()+sim.tilt.slice(1);
     });
   });
-  // Default "none" active
   s.querySelector('[data-tilt="none"]')?.classList.add('active');
-
-  // Distance slider
   s.querySelector('#dist-sl')?.addEventListener('input',e=>{
     sim.distance=parseInt(e.target.value);
     document.getElementById('sdist').textContent=sim.distance;
   });
-
   updateSimUI();
 }
 
 function updateSimUI(){
-  // LED
-  const hubLed=document.getElementById('hub-led');
-  const lring=document.getElementById('lring');
-  const lcore=document.getElementById('lcore');
-  const ledHex=document.getElementById('led-hex');
-  if(hubLed){
-    hubLed.style.background=sim.ledOn?sim.ledColor:'#1A1A1A';
-    hubLed.style.boxShadow=sim.ledOn?`0 0 12px ${sim.ledColor},0 0 24px ${sim.ledColor}40`:'none';
-  }
-  if(lring){
-    lring.style.borderColor=sim.ledOn?sim.ledColor+'80':'#1E2E3E';
-    lring.style.boxShadow=sim.ledOn?`0 0 12px ${sim.ledColor}55`:'none';
-  }
-  if(lcore){
-    lcore.style.background=sim.ledOn?sim.ledColor:'#111';
-    lcore.style.boxShadow=sim.ledOn?`0 0 8px ${sim.ledColor}`:'none';
-  }
-  if(ledHex) ledHex.textContent=sim.ledColor;
-
-  // Motor
-  const mw=document.getElementById('mwheel');
-  const ms=document.getElementById('mstatus');
-  const mpow=document.getElementById('mpow');
-  const mpf=document.getElementById('mpfill');
+  const hl=document.getElementById('hub-led'), lr=document.getElementById('lring');
+  const lc=document.getElementById('lcore'), lx=document.getElementById('led-hex');
+  if(hl){ hl.style.background=sim.ledOn?sim.ledColor:'#1A1A1A'; hl.style.boxShadow=sim.ledOn?`0 0 12px ${sim.ledColor},0 0 24px ${sim.ledColor}40`:'none'; }
+  if(lr){ lr.style.borderColor=sim.ledOn?sim.ledColor+'80':'#1E2E3E'; lr.style.boxShadow=sim.ledOn?`0 0 12px ${sim.ledColor}55`:'none'; }
+  if(lc){ lc.style.background=sim.ledOn?sim.ledColor:'#111'; lc.style.boxShadow=sim.ledOn?`0 0 8px ${sim.ledColor}`:'none'; }
+  if(lx) lx.textContent=sim.ledColor;
+  const mw=document.getElementById('mwheel'), ms=document.getElementById('mstatus');
+  const mpow=document.getElementById('mpow'), mpf=document.getElementById('mpfill');
   if(mw){
     mw.className='mwheel'+(sim.motorOn?(sim.motorDir>0?' on':' onr'):'');
-    const spd=sim.motorOn?(sim.motorPower/10)*0.25:0;
-    if(sim.motorOn){
-      mw.querySelectorAll('.mspoke,.mspoke2').forEach(s=>{
-        s.style.animationDuration=spd+'s';
-      });
-    }
+    if(sim.motorOn){ const spd=(sim.motorPower/10)*0.25+'s'; mw.querySelectorAll('.mspoke,.mspoke2').forEach(s=>s.style.animationDuration=spd); }
   }
-  if(ms){ ms.className='mstatus'+(sim.motorOn?' on':'');
-          ms.textContent=sim.motorOn?`Running (${sim.motorDir>0?'→':'←'})`:'Stopped'; }
+  if(ms){ ms.className='mstatus'+(sim.motorOn?' on':''); ms.textContent=sim.motorOn?`Работает (${sim.motorDir>0?'→':'←'})`:'Остановлен'; }
   if(mpow) mpow.textContent=sim.motorOn?sim.motorPower:0;
-  if(mpf) mpf.style.width=(sim.motorOn?(sim.motorPower/10*100):0)+'%';
-
-  // Display
-  const dout=document.getElementById('disp-out');
-  if(dout) dout.textContent=sim.display||'—';
+  if(mpf) mpf.style.width=(sim.motorOn?sim.motorPower/10*100:0)+'%';
+  const dout=document.getElementById('disp-out'); if(dout) dout.textContent=sim.display||'—';
 }
 
 let logLines=[];
 function simLog(msg){
   const now=new Date();
   const ts=`${String(now.getSeconds()).padStart(2,'0')}.${String(Math.floor(now.getMilliseconds()/100))}`;
-  logLines.push({ts,msg});
-  if(logLines.length>60) logLines.shift();
-  const el=document.getElementById('sim-log');
-  if(!el) return;
-  el.innerHTML=logLines.map(l=>
-    `<div class="ll"><span class="lts">${l.ts}</span>${escHtml(l.msg)}</div>`
-  ).join('');
+  logLines.push({ts,msg}); if(logLines.length>60) logLines.shift();
+  const el=document.getElementById('sim-log'); if(!el) return;
+  el.innerHTML=logLines.map(l=>`<div class="ll"><span class="lts">${l.ts}</span>${escHtml(l.msg)}</div>`).join('');
   el.scrollTop=el.scrollHeight;
 }
-
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
-
 function updateRunUI(running){
   document.getElementById('run-ind').classList.toggle('hidden',!running);
   document.getElementById('btn-run').classList.toggle('hidden',running);
@@ -1144,15 +793,14 @@ function updateRunUI(running){
 }
 
 // ══════════════════════════════════════════════
-//  KEYBOARD (start_key blocks)
+//  KEYBOARD
 // ══════════════════════════════════════════════
 document.addEventListener('keydown',e=>{
   if(!vm.running) return;
-  const k=e.key==='  '?'SPACE':e.key.toUpperCase();
+  const k=e.key===' '?'SPACE':e.key.toUpperCase();
   Object.values(blocks).forEach(b=>{
-    if(b.type==='start_key' && (b.vals.key||'SPACE').toUpperCase()===k){
-      if(b.nextId) runChain(b.nextId).catch(()=>{});
-    }
+    if(b.type==='start_key'&&(b.vals.key||'SPACE').toUpperCase()===k&&b.nextId)
+      runChain(b.nextId).catch(()=>{});
   });
 });
 
@@ -1160,48 +808,77 @@ document.addEventListener('keydown',e=>{
 //  UTILS
 // ══════════════════════════════════════════════
 function hexAlpha(hex,a){
-  const r=parseInt(hex.slice(1,3),16);
-  const g=parseInt(hex.slice(3,5),16);
-  const b=parseInt(hex.slice(5,7),16);
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
   return `rgba(${r},${g},${b},${a})`;
 }
 function darken(hex,amt){
-  let r=parseInt(hex.slice(1,3),16);
-  let g=parseInt(hex.slice(3,5),16);
-  let b=parseInt(hex.slice(5,7),16);
-  r=Math.max(0,Math.round(r*(1-amt)));
-  g=Math.max(0,Math.round(g*(1-amt)));
-  b=Math.max(0,Math.round(b*(1-amt)));
-  return `rgb(${r},${g},${b})`;
+  let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgb(${Math.max(0,Math.round(r*(1-amt)))},${Math.max(0,Math.round(g*(1-amt)))},${Math.max(0,Math.round(b*(1-amt)))})`;
 }
 
 // ══════════════════════════════════════════════
-//  DEMO PROGRAM
+//  API — SAVE / LOAD
 // ══════════════════════════════════════════════
-function loadDemo(){
-  const s=mkBlock('start',40,40);
-  const l=mkBlock('set_light',0,0); blocks[l].vals.color='#00CCFF';
-  const m=mkBlock('motor_on',0,0); blocks[m].vals.power=7;
-  const rep=mkBlock('repeat',0,0); blocks[rep].vals.times=3;
-  const w1=mkBlock('wait',0,0); blocks[w1].vals.secs=0.5;
-  const w2=mkBlock('wait',0,0); blocks[w2].vals.secs=0.5;
-  const ms=mkBlock('motor_stop',0,0);
-  const lo=mkBlock('light_off',0,0);
+let dirty=false, saveTimer=null;
 
-  // Chain: start → set_light → motor_on → repeat(wait) → motor_stop → light_off
-  getB(s).nextId=l;
-  getB(l).nextId=m;
-  getB(m).nextId=rep;
-  getB(rep).bodyId=w1;
-  getB(rep).nextId=ms;
-  getB(ms).nextId=lo;
-  getB(w1).nextId=w2;
-
-  renderCanvas();
-  setTimeout(()=>{
-    layoutFrom(s);
+function markDirty(){
+  dirty=true; setStatus('saving');
+  clearTimeout(saveTimer); saveTimer=setTimeout(saveProject,6000);
+}
+function setStatus(s){
+  const el=document.getElementById('status'); if(!el) return;
+  if(s==='saved'){ el.textContent='● сохранено'; el.className='status-pill saved'; }
+  else if(s==='saving'){ el.textContent='● сохранение...'; el.className='status-pill saving'; }
+  else { el.textContent='● не сохранено'; el.className='status-pill'; }
+}
+function serializeCode(){
+  const cb={};
+  Object.values(blocks).forEach(b=>{
+    cb[b.id]={id:b.id,type:b.type,x:b.x,y:b.y,vals:{...b.vals},nextId:b.nextId,bodyId:b.bodyId};
+  });
+  return {blocks:cb,idN};
+}
+function deserializeCode(state){
+  if(!state||!state.blocks||!Object.keys(state.blocks).length) return;
+  blocks=state.blocks;
+  if(state.idN){ idN=state.idN; }
+  else{
+    let m=0;
+    Object.keys(state.blocks).forEach(k=>{ const n=parseInt(k.replace('b',''))||0; if(n>m) m=n; });
+    idN=m;
+  }
+}
+async function loadProject(){
+  try{
+    const d=await(await fetch(`/api/projects/${PID}`)).json();
+    document.getElementById('proj-name').value=d.name||'Проект';
+    if(d.code_state) deserializeCode(d.code_state);
     renderCanvas();
-  },80);
+    setTimeout(()=>renderCanvas(),80);
+    setStatus('saved');
+  }catch(e){ toast('Ошибка загрузки','err'); }
+}
+async function saveProject(){
+  try{
+    setStatus('saving');
+    const name=(document.getElementById('proj-name')?.value||'').trim()||'Проект';
+    await fetch(`/api/projects/${PID}`,{
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,code_state:serializeCode()})
+    });
+    dirty=false; setStatus('saved'); toast('Сохранено!','ok');
+  }catch(e){ toast('Ошибка сохранения','err'); }
+}
+async function saveProjectName(){
+  const name=(document.getElementById('proj-name')?.value||'').trim()||'Проект';
+  try{ await fetch(`/api/projects/${PID}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})}); }catch{}
+}
+function goBack(){ saveProject().finally(()=>location.href=`/static/simulator.html?id=${PID}`); }
+let toastT;
+function toast(msg,t='ok'){
+  const el=document.getElementById('toast'); if(!el) return;
+  el.textContent=msg; el.className=`toast show ${t}`;
+  clearTimeout(toastT); toastT=setTimeout(()=>el.className='toast',2200);
 }
 
 // ══════════════════════════════════════════════
@@ -1214,17 +891,16 @@ document.getElementById('btn-run').addEventListener('click',runProgram);
 document.getElementById('btn-stop').addEventListener('click',()=>{ vm.stop=true; });
 document.getElementById('btn-clear').addEventListener('click',()=>{
   blocks={}; idN=0;
-  sim.motorOn=false; sim.ledOn=false; sim.ledColor='#1A1A1A'; sim.display='';
+  sim.motorOn=false; sim.ledOn=false; sim.ledColor='#1A1A1A'; sim.display='—';
+  bc?.postMessage({type:'motor_off'});
   logLines=[];
-  renderCanvas(); updateSimUI();
-  const logEl=document.getElementById('sim-log');
-  if(logEl) logEl.innerHTML='';
-  const dispEl=document.getElementById('disp-out');
-  if(dispEl) dispEl.textContent='—';
+  renderCanvas(); updateSimUI(); markDirty();
+  const logEl=document.getElementById('sim-log'); if(logEl) logEl.innerHTML='';
+  const dispEl=document.getElementById('disp-out'); if(dispEl) dispEl.textContent='—';
 });
 
-// Load demo on start
-loadDemo();
+// Загрузка проекта из API
+loadProject();
 </script>
 </body>
 </html>
